@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/kinward-energy/static/css/main.ac12a34f.css",
+    "main.js": "/kinward-energy/static/js/main.576fa039.js",
+    "index.html": "/kinward-energy/index.html",
+    "main.ac12a34f.css.map": "/kinward-energy/static/css/main.ac12a34f.css.map",
+    "main.576fa039.js.map": "/kinward-energy/static/js/main.576fa039.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.ac12a34f.css",
+    "static/js/main.576fa039.js"
+  ]
+}
