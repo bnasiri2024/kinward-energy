@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/kinward-energy/static/css/main.ac12a34f.css",
-    "main.js": "/kinward-energy/static/js/main.fea8ec5a.js",
+    "main.js": "/kinward-energy/static/js/main.944ec46f.js",
     "index.html": "/kinward-energy/index.html",
     "main.ac12a34f.css.map": "/kinward-energy/static/css/main.ac12a34f.css.map",
-    "main.fea8ec5a.js.map": "/kinward-energy/static/js/main.fea8ec5a.js.map"
+    "main.944ec46f.js.map": "/kinward-energy/static/js/main.944ec46f.js.map"
   },
   "entrypoints": [
     "static/css/main.ac12a34f.css",
-    "static/js/main.fea8ec5a.js"
+    "static/js/main.944ec46f.js"
   ]
 }
