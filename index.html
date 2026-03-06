@@ -1,626 +1,453 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Kinward Energy | Development-Phase Infrastructure Integration</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
 <style>
-:root{--navy:#020617;--cyan:#22d3ee;--blue:#38bdf8;--white:#f0f8ff;--muted:#94a3b8;--glass:rgba(255,255,255,0.035);--glass-border:rgba(56,189,248,0.12);}
+/* ═══════════════════════════════════════════
+   RESET & TOKENS
+═══════════════════════════════════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  /* website */
+  --navy:#020617;--cyan:#22d3ee;--blue-w:#38bdf8;--white:#f0f8ff;
+  --muted:#94a3b8;--glass:rgba(255,255,255,0.035);--glass-border:rgba(56,189,248,0.12);
+  /* tool */
+  --bg0:#0b1018;--bg1:#101820;--bg2:#162030;--bg3:#1c2840;
+  --border:#1e2e42;--border2:#263a54;
+  --text:#eef3ff;--text2:#9ab0cc;--text3:#567898;--text4:#304860;
+  --blue:#38bdf8;--purple:#a78bfa;--green:#34d399;--yellow:#fbbf24;--red:#f87171;
+  --mono:'JetBrains Mono',monospace;--sans:'Syne',sans-serif;
+}
 html{scroll-behavior:smooth;}
 body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--white);overflow-x:hidden;cursor:none;}
-.cursor{position:fixed;width:12px;height:12px;border-radius:50%;background:var(--cyan);pointer-events:none;z-index:99999;mix-blend-mode:screen;transition:transform 0.1s ease;}
-.cursor-ring{position:fixed;width:40px;height:40px;border-radius:50%;border:1px solid rgba(34,211,238,0.5);pointer-events:none;z-index:99998;transition:all 0.15s ease;}
-#gridCanvas{position:fixed;inset:0;z-index:1;opacity:0.22;pointer-events:none;}
-#particleCanvas{position:fixed;inset:0;z-index:2;pointer-events:none;}
-.bg-gradient{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 60% at 15% 10%,rgba(34,211,238,0.07) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 85% 80%,rgba(56,189,248,0.06) 0%,transparent 60%),radial-gradient(ellipse 100% 80% at 50% 50%,#030c1e 0%,#020617 100%);}
-header{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 48px;height:72px;display:flex;align-items:center;justify-content:space-between;background:rgba(2,6,23,0.65);backdrop-filter:blur(20px);border-bottom:1px solid rgba(56,189,248,0.08);}
-.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;letter-spacing:0.06em;text-transform:uppercase;background:linear-gradient(90deg,#38bdf8,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-nav{display:flex;align-items:center;gap:32px;}
-nav a{font-size:0.78rem;font-weight:500;color:var(--muted);text-decoration:none;letter-spacing:0.07em;text-transform:uppercase;transition:color 0.3s;position:relative;}
-nav a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:1px;background:var(--cyan);transform:scaleX(0);transition:transform 0.3s;transform-origin:left;}
-nav a:hover{color:var(--cyan);}
-nav a:hover::after{transform:scaleX(1);}
-.nav-cta{padding:9px 22px;border-radius:4px;border:1px solid var(--cyan)!important;color:var(--cyan)!important;font-size:0.78rem!important;background:transparent;transition:all 0.3s!important;}
-.nav-cta:hover{background:rgba(34,211,238,0.1)!important;box-shadow:0 0 20px rgba(34,211,238,0.2);}
-.nav-cta::after{display:none!important;}
-.hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;z-index:10;padding:100px 40px 80px;text-align:center;}
-.hero-inner{max-width:940px;}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:0.72rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--cyan);margin-bottom:36px;opacity:0;animation:fadeUp 0.8s ease 0.3s forwards;}
-.hero-eyebrow::before,.hero-eyebrow::after{content:'';width:40px;height:1px;background:linear-gradient(90deg,transparent,var(--cyan));}
-.hero-eyebrow::after{background:linear-gradient(90deg,var(--cyan),transparent);}
-.hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2.6rem,6vw,5.2rem);line-height:1.04;letter-spacing:-0.02em;margin-bottom:28px;opacity:0;animation:fadeUp 0.9s ease 0.5s forwards;}
-.hero h1 .l1{display:block;background:linear-gradient(100deg,#f0f8ff 30%,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.hero h1 .l2{display:block;background:linear-gradient(100deg,#22d3ee,#38bdf8 60%,#0ea5e9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.hero-sub{font-size:1.08rem;line-height:1.85;color:#8da6bf;font-weight:300;max-width:700px;margin:0 auto 44px;opacity:0;animation:fadeUp 0.9s ease 0.7s forwards;}
-.hero-tagline{display:flex;justify-content:center;gap:0;margin-bottom:56px;opacity:0;animation:fadeUp 0.9s ease 0.9s forwards;}
-.tag-pill{padding:10px 24px;font-family:'Syne',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--cyan);border:1px solid rgba(34,211,238,0.2);background:rgba(34,211,238,0.03);transition:all 0.3s;}
-.tag-pill:first-child{border-radius:4px 0 0 4px;}
-.tag-pill:last-child{border-radius:0 4px 4px 0;border-left:none;}
-.tag-pill:nth-child(2){border-left:none;border-right:none;}
-.tag-pill:hover{background:rgba(34,211,238,0.1);color:#fff;}
-.hero-markets{opacity:0;animation:fadeUp 0.9s ease 1.05s forwards;width:100%;max-width:820px;margin:0 auto;}
-.hero-markets-label{font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
-.market-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.market-card{padding:28px;border-radius:12px;border:1px solid var(--glass-border);background:var(--glass);backdrop-filter:blur(15px);text-align:left;transition:all 0.35s;position:relative;overflow:hidden;}
-.market-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);transform:scaleX(0);transition:transform 0.4s;}
-.market-card:hover{border-color:rgba(34,211,238,0.3);transform:translateY(-5px);box-shadow:0 20px 40px rgba(0,0,0,0.4),0 0 30px rgba(34,211,238,0.07);}
-.market-card:hover::after{transform:scaleX(1);}
-.market-tag{font-size:0.66rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
-.market-dot{width:5px;height:5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 6px var(--cyan);}
-.market-card h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--white);margin-bottom:8px;}
-.market-card p{font-size:0.82rem;color:#7a96b0;font-weight:300;line-height:1.7;}
-.hero-scroll{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:fadeIn 1s ease 1.5s forwards;}
-.scroll-line{width:1px;height:60px;background:linear-gradient(to bottom,var(--cyan),transparent);animation:scrollPulse 2s ease infinite;}
-.scroll-text{font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);}
-.section{position:relative;z-index:10;}
-.container{max-width:1160px;margin:0 auto;padding:0 48px;}
-.section-label{font-size:0.68rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--cyan);margin-bottom:20px;display:flex;align-items:center;gap:12px;}
-.section-label::after{content:'';flex:1;max-width:60px;height:1px;background:var(--cyan);opacity:0.4;}
-.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(56,189,248,0.12),transparent);margin:0 48px;}
-.section-problem{padding:120px 0;}
-.problem-layout{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;}
-.problem-left h2{font-family:'Syne',sans-serif;font-size:clamp(1.9rem,3vw,2.7rem);font-weight:700;line-height:1.1;letter-spacing:-0.02em;margin-bottom:24px;}
-.problem-left h2 em{font-style:normal;color:var(--cyan);}
-.problem-left p{font-size:1rem;line-height:1.9;color:#7a96b0;font-weight:300;margin-bottom:16px;}
-.pull-quote{margin-top:32px;padding:24px 28px;border-left:2px solid var(--cyan);background:rgba(34,211,238,0.04);border-radius:0 8px 8px 0;font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:600;color:var(--white);line-height:1.65;}
-.failure-list{display:flex;flex-direction:column;gap:14px;}
-.fail-item{display:flex;align-items:flex-start;gap:16px;padding:20px 22px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(10px);transition:all 0.3s;}
-.fail-item:hover{border-color:rgba(34,211,238,0.25);background:rgba(34,211,238,0.04);transform:translateX(4px);}
-.fail-icon{width:34px;height:34px;border-radius:8px;flex-shrink:0;background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.15);display:flex;align-items:center;justify-content:center;font-size:0.85rem;}
-.fail-content h4{font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;color:var(--white);margin-bottom:4px;}
-.fail-content p{font-size:0.82rem;color:var(--muted);font-weight:300;line-height:1.6;}
-.section-position{padding:100px 0;background:rgba(34,211,238,0.012);}
-.position-center{text-align:center;max-width:800px;margin:0 auto 56px;}
-.position-center h2{font-family:'Syne',sans-serif;font-size:clamp(2rem,3.5vw,3rem);font-weight:800;letter-spacing:-0.025em;line-height:1.1;margin-bottom:22px;}
-.position-center h2 em{font-style:normal;background:linear-gradient(90deg,#22d3ee,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.position-center > p{font-size:1rem;color:#7a96b0;font-weight:300;line-height:1.85;}
-.position-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-.pos-card{padding:28px 24px;border-radius:12px;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(15px);transition:all 0.35s;position:relative;overflow:hidden;}
-.pos-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(34,211,238,0.05) 0%,transparent 60%);opacity:0;transition:opacity 0.35s;}
-.pos-card:hover{border-color:rgba(34,211,238,0.3);transform:translateY(-6px);box-shadow:0 24px 50px rgba(0,0,0,0.4),0 0 30px rgba(34,211,238,0.07);}
-.pos-card:hover::before{opacity:1;}
-.pos-num{font-family:'Syne',sans-serif;font-size:0.62rem;font-weight:700;color:var(--cyan);letter-spacing:0.15em;margin-bottom:10px;opacity:0.55;}
-.pos-card h4{font-family:'Syne',sans-serif;font-size:0.9rem;font-weight:700;color:var(--white);margin-bottom:8px;}
-.pos-card p{font-size:0.82rem;color:var(--muted);font-weight:300;line-height:1.7;}
-.section-difference{padding:110px 0;}
-.difference-layout{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;}
-.difference-left h2{font-family:'Syne',sans-serif;font-size:clamp(1.9rem,3vw,2.8rem);font-weight:700;line-height:1.1;letter-spacing:-0.02em;margin-bottom:28px;}
-.difference-left h2 em{font-style:normal;background:linear-gradient(90deg,#22d3ee,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.difference-left p{font-size:1rem;line-height:1.9;color:#7a96b0;font-weight:300;margin-bottom:16px;}
-.interface-statement{margin-top:36px;padding:28px 30px;border-left:2px solid var(--cyan);background:rgba(34,211,238,0.04);border-radius:0 8px 8px 0;}
-.interface-statement p{font-size:1.1rem;font-weight:400;color:var(--white);line-height:1.7;margin-bottom:6px;}
-.interface-statement span{font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;color:var(--cyan);letter-spacing:0.1em;}
-/* INTERFACE MANAGEMENT DIAGRAM */
-.ifd-wrap{width:100%;max-width:420px;margin:0 auto;}
-.ifd-row{display:flex;gap:12px;justify-content:center;}
-.ifd-bubble{flex:1;border-radius:10px;border:1px solid rgba(34,211,238,0.2);background:rgba(34,211,238,0.04);backdrop-filter:blur(10px);padding:14px 12px;text-align:center;transition:all 0.3s;cursor:default;}
-.ifd-bubble:hover{border-color:rgba(34,211,238,0.45);background:rgba(34,211,238,0.09);box-shadow:0 0 18px rgba(34,211,238,0.1);}
-.ifd-b-label{font-family:'Syne',sans-serif;font-size:0.63rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--cyan);margin-bottom:3px;}
-.ifd-b-sub{font-size:0.58rem;color:var(--muted);font-weight:300;}
-.ifd-vline{display:flex;justify-content:center;height:24px;}
-.ifd-vline::before{content:'';width:1px;height:100%;background:linear-gradient(to bottom,rgba(34,211,238,0.12),rgba(34,211,238,0.45),rgba(34,211,238,0.12));}
-.ifd-center-box{border-radius:14px;border:1px solid rgba(34,211,238,0.3);background:linear-gradient(135deg,rgba(34,211,238,0.08),rgba(56,189,248,0.04));backdrop-filter:blur(16px);padding:24px 20px;text-align:center;position:relative;margin:0 10px;}
-.ifd-center-box::before{content:'';position:absolute;inset:-1px;border-radius:15px;background:linear-gradient(135deg,rgba(34,211,238,0.12),transparent,rgba(56,189,248,0.08));z-index:-1;}
-.ifd-c-label{font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(34,211,238,0.6);margin-bottom:6px;}
-.ifd-c-main{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;color:var(--white);line-height:1;margin-bottom:6px;}
-.ifd-c-sub{font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:rgba(34,211,238,0.5);}
-.ifd-rtb{margin-top:20px;text-align:center;}
-.ifd-rtb-pill{display:inline-block;padding:9px 20px;border-radius:5px;border:1px solid rgba(34,211,238,0.2);background:rgba(34,211,238,0.04);font-family:'Syne',sans-serif;font-size:0.62rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--cyan);}
-.section-value{padding:100px 0;}
-.value-header{text-align:center;margin-bottom:60px;}
-.value-header h2{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:14px;}
-.value-header p{font-size:0.98rem;color:var(--muted);font-weight:300;max-width:520px;margin:0 auto;line-height:1.8;}
-.value-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
-.value-col{padding:40px;border-radius:16px;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(20px);transition:all 0.4s cubic-bezier(0.23,1,0.32,1);position:relative;overflow:hidden;}
-.value-col::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(34,211,238,0.04) 0%,transparent 60%);opacity:0;transition:opacity 0.4s;}
-.value-col:hover{border-color:rgba(34,211,238,0.3);transform:translateY(-8px);box-shadow:0 30px 60px rgba(0,0,0,0.4),0 0 40px rgba(34,211,238,0.07);}
-.value-col:hover::before{opacity:1;}
-.col-glow{position:absolute;top:-50px;right:-50px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(34,211,238,0.07),transparent 70%);pointer-events:none;}
-.col-icon{width:42px;height:42px;border-radius:10px;background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.18);display:flex;align-items:center;justify-content:center;margin-bottom:22px;font-size:1rem;}
-.value-col h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--white);margin-bottom:20px;}
-.check-list{list-style:none;display:flex;flex-direction:column;gap:11px;}
-.check-list li{display:flex;align-items:flex-start;gap:12px;font-size:0.88rem;color:#8da6bf;font-weight:300;line-height:1.6;transition:color 0.3s;}
-.check-list li::before{content:'';width:16px;height:1px;background:var(--cyan);flex-shrink:0;margin-top:10px;transition:width 0.3s;}
-.value-col:hover .check-list li{color:#adbfd4;}
-.value-col:hover .check-list li::before{width:22px;}
-.section-audience{padding:100px 0;}
-.audience-header{text-align:center;margin-bottom:64px;}
-.audience-header h2{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:14px;}
-.audience-header p{font-size:0.98rem;color:var(--muted);font-weight:300;max-width:560px;margin:0 auto;line-height:1.8;}
-.audience-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
-.aud-card{padding:50px 44px;border-radius:16px;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(20px);position:relative;overflow:hidden;transition:all 0.4s cubic-bezier(0.23,1,0.32,1);}
-.aud-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);transform:scaleX(0);transition:transform 0.5s ease;}
-.aud-card:hover{transform:translateY(-10px);border-color:rgba(34,211,238,0.3);box-shadow:0 40px 80px rgba(0,0,0,0.4),0 0 50px rgba(34,211,238,0.07);}
-.aud-card:hover::after{transform:scaleX(1);}
-.aud-tag{display:inline-flex;align-items:center;gap:7px;font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:22px;padding:6px 14px;border:1px solid rgba(34,211,238,0.2);border-radius:3px;background:rgba(34,211,238,0.04);}
-.aud-card h3{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:700;color:var(--white);margin-bottom:16px;}
-.aud-card > p{font-size:0.92rem;color:#7a96b0;font-weight:300;line-height:1.85;margin-bottom:28px;}
-.aud-list{list-style:none;display:flex;flex-direction:column;gap:10px;}
-.aud-list li{display:flex;align-items:flex-start;gap:10px;font-size:0.85rem;color:#8da6bf;font-weight:300;line-height:1.6;}
-.aud-list li::before{content:'→';color:var(--cyan);font-size:0.75rem;margin-top:1px;flex-shrink:0;}
-.section-technical{padding:100px 0;}
-.section-header{text-align:center;margin-bottom:64px;}
-.section-header h2{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:14px;}
-.section-header p{font-size:0.98rem;color:var(--muted);font-weight:300;max-width:540px;margin:0 auto;line-height:1.8;}
-.tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
-.tech-card{background:var(--glass);border:1px solid var(--glass-border);border-radius:16px;padding:40px;backdrop-filter:blur(20px);position:relative;overflow:hidden;transition:all 0.4s cubic-bezier(0.23,1,0.32,1);}
-.tech-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(34,211,238,0.04) 0%,transparent 60%);opacity:0;transition:opacity 0.4s;}
-.tech-card:hover{border-color:rgba(34,211,238,0.3);transform:translateY(-8px);box-shadow:0 30px 60px rgba(0,0,0,0.5),0 0 40px rgba(34,211,238,0.07);}
-.tech-card:hover::before{opacity:1;}
-.card-glow{position:absolute;top:-60px;right:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(34,211,238,0.07),transparent 70%);pointer-events:none;}
-.card-icon{width:44px;height:44px;border-radius:10px;background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:24px;font-size:1.1rem;}
-.tech-card h3{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;color:var(--white);margin-bottom:22px;}
-.tech-list{list-style:none;display:flex;flex-direction:column;gap:12px;}
-.tech-list li{display:flex;align-items:flex-start;gap:12px;font-size:0.88rem;color:#8da6bf;font-weight:300;line-height:1.6;transition:color 0.3s;}
-.tech-list li::before{content:'';width:5px;height:1px;background:var(--cyan);flex-shrink:0;margin-top:11px;transition:width 0.3s;}
-.tech-card:hover .tech-list li{color:#adbfd4;}
-.tech-card:hover .tech-list li::before{width:12px;}
-.section-mission{padding:100px 0 120px;background:rgba(34,211,238,0.012);}
-.mission-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
-.mission-card{padding:48px 36px;border-radius:16px;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(20px);position:relative;overflow:hidden;transition:all 0.4s cubic-bezier(0.23,1,0.32,1);}
-.mission-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);transform:scaleX(0);transition:transform 0.5s;}
-.mission-card:hover{transform:translateY(-10px);border-color:rgba(34,211,238,0.25);box-shadow:0 40px 80px rgba(0,0,0,0.5),0 0 60px rgba(34,211,238,0.06);}
-.mission-card:hover::after{transform:scaleX(1);}
-.mission-num{font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;color:rgba(34,211,238,0.06);line-height:1;margin-bottom:16px;}
-.mission-card h3{font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;color:var(--cyan);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:16px;}
-.mission-card p{font-size:0.9rem;line-height:1.9;color:#7a96b0;font-weight:300;}
-.contact-section{padding:120px 48px;text-align:center;position:relative;z-index:10;}
-.contact-inner{max-width:620px;margin:0 auto;}
-.contact-section h2{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:18px;line-height:1.1;}
-.contact-section h2 span{background:linear-gradient(90deg,#22d3ee,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.contact-section p{font-size:0.98rem;color:var(--muted);font-weight:300;margin-bottom:48px;line-height:1.8;}
-.contact-links{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;}
-.contact-link{display:flex;align-items:center;gap:10px;padding:14px 28px;border-radius:6px;border:1px solid rgba(34,211,238,0.25);background:rgba(34,211,238,0.04);color:var(--cyan);text-decoration:none;font-size:0.88rem;font-weight:500;letter-spacing:0.04em;transition:all 0.3s;}
-.contact-link:hover{background:rgba(34,211,238,0.12);border-color:var(--cyan);box-shadow:0 0 30px rgba(34,211,238,0.15);transform:translateY(-2px);}
-.contact-link svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
-footer{border-top:1px solid rgba(56,189,248,0.07);padding:28px 48px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:10;}
-.footer-logo{font-family:'Syne',sans-serif;font-size:0.88rem;font-weight:700;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;}
-.footer-copy{font-size:0.72rem;color:rgba(148,163,184,0.35);letter-spacing:0.04em;}
-@keyframes fadeUp{from{opacity:0;transform:translateY(32px);}to{opacity:1;transform:translateY(0);}}
-@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
-@keyframes scrollPulse{0%,100%{opacity:0.3;}50%{opacity:1;}}
-.reveal{opacity:0;transform:translateY(40px);transition:opacity 0.85s cubic-bezier(0.23,1,0.32,1),transform 0.85s cubic-bezier(0.23,1,0.32,1);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#263a54;border-radius:2px;}
+
+/* ═══════════════════════════════════════════
+   CURSOR
+═══════════════════════════════════════════ */
+#cursor{position:fixed;width:12px;height:12px;border-radius:50%;background:var(--cyan);pointer-events:none;z-index:99999;mix-blend-mode:screen;transform:translate(-50%,-50%);transition:transform .1s;}
+#cursor-ring{position:fixed;width:40px;height:40px;border-radius:50%;border:1px solid rgba(34,211,238,.5);pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:all .15s;}
+
+/* ═══════════════════════════════════════════
+   ANIMATIONS
+═══════════════════════════════════════════ */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease;}
 .reveal.visible{opacity:1;transform:translateY(0);}
-.reveal-delay-1{transition-delay:0.1s;}
-.reveal-delay-2{transition-delay:0.22s;}
-.reveal-delay-3{transition-delay:0.34s;}
-@media(max-width:768px){
-  /* Hide custom cursor on touch devices */
-  .cursor,.cursor-ring{display:none;}
-  body{cursor:auto;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 
-  /* Header */
-  header{padding:0 20px;height:62px;}
-  .logo{font-size:1rem;}
-  nav{gap:0;}
-  nav a:not(.nav-cta){display:none;}
-  .nav-cta{padding:7px 16px;font-size:0.74rem!important;}
+/* ═══════════════════════════════════════════
+   WEBSITE — HEADER
+═══════════════════════════════════════════ */
+header{position:fixed;top:0;left:0;right:0;z-index:1000;padding:0 48px;height:72px;display:flex;align-items:center;justify-content:space-between;background:rgba(2,6,23,.65);backdrop-filter:blur(20px);border-bottom:1px solid rgba(56,189,248,.08);}
+.w-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.15rem;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;background:linear-gradient(90deg,#38bdf8,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;cursor:pointer;}
+nav{display:flex;align-items:center;gap:28px;}
+.nav-link{font-size:.78rem;font-weight:500;color:#94a3b8;text-decoration:none;letter-spacing:.07em;text-transform:uppercase;background:none;border:none;font-family:'DM Sans',sans-serif;cursor:pointer;transition:color .3s;}
+.nav-link:hover{color:#22d3ee;}
+.nav-cta{padding:9px 22px;border-radius:4px;border:1px solid #22d3ee;color:#22d3ee;font-size:.78rem;text-decoration:none;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:.07em;text-transform:uppercase;background:transparent;transition:all .3s;cursor:pointer;}
+.nav-cta:hover{background:rgba(34,211,238,.08);}
+.nav-tool{padding:9px 20px;border-radius:4px;border:1px solid #a78bfa;color:#a78bfa;font-size:.78rem;font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:.07em;text-transform:uppercase;background:transparent;transition:all .3s;cursor:pointer;white-space:nowrap;}
+.nav-tool:hover{background:rgba(167,139,250,.1);box-shadow:0 0 20px rgba(167,139,250,.15);}
 
-  /* Hero */
-  .hero{padding:90px 20px 60px;min-height:auto;}
-  .hero h1{font-size:clamp(2rem,8vw,3rem);margin-bottom:20px;}
-  .hero-sub{font-size:0.95rem;margin-bottom:32px;line-height:1.75;}
-  .hero-eyebrow{font-size:0.65rem;margin-bottom:24px;}
-  .hero-tagline{margin-bottom:36px;}
-  .tag-pill{padding:9px 16px;font-size:0.68rem;}
-  .hero-markets-label{font-size:0.63rem;}
-  .market-cards{grid-template-columns:1fr;gap:12px;}
-  .market-card{padding:22px 20px;}
-  .market-card h3{font-size:0.95rem;}
-  .market-card p{font-size:0.8rem;}
-  .hero-scroll{display:none;}
+/* ═══════════════════════════════════════════
+   WEBSITE — BG
+═══════════════════════════════════════════ */
+.bg-gradient{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 60% at 15% 10%,rgba(34,211,238,.07) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 85% 80%,rgba(56,189,248,.06) 0%,transparent 60%),radial-gradient(ellipse 100% 80% at 50% 50%,#030c1e 0%,#020617 100%);}
+canvas{position:fixed;inset:0;pointer-events:none;}
+#grid-canvas{z-index:1;opacity:.22;}
+#particle-canvas{z-index:2;}
 
-  /* Containers & layout */
-  .container{padding:0 20px;}
-  .divider{margin:0 20px;}
+/* ═══════════════════════════════════════════
+   WEBSITE — SECTIONS
+═══════════════════════════════════════════ */
+.w-section{position:relative;z-index:10;}
+.container{max-width:1160px;margin:0 auto;padding:0 48px;}
+.section-label{font-size:.68rem;letter-spacing:.25em;text-transform:uppercase;color:#22d3ee;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.section-label::after{content:'';flex:1;max-width:60px;height:1px;background:#22d3ee;opacity:.4;}
+.w-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(56,189,248,.12),transparent);margin:0 48px;}
+.glass-card{padding:28px 26px;border-radius:12px;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(15px);transition:all .35s;}
+.glass-card:hover{border-color:rgba(34,211,238,.25);background:rgba(255,255,255,.05);}
+.card-tag{font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:#22d3ee;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.card-dot{width:5px;height:5px;border-radius:50%;background:#22d3ee;box-shadow:0 0 6px #22d3ee;flex-shrink:0;}
+.card-h3{font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#f0f8ff;margin-bottom:8px;}
+.card-p{font-size:.82rem;color:#7a96b0;font-weight:300;line-height:1.7;}
+.sec-center{text-align:center;max-width:800px;margin:0 auto 56px;}
+.sec-h2{font-family:'Syne',sans-serif;font-size:clamp(2rem,3.5vw,3rem);font-weight:800;letter-spacing:-.025em;line-height:1.1;margin-bottom:22px;}
+.sec-p{font-size:1rem;color:#7a96b0;font-weight:300;line-height:1.85;}
 
-  /* All 2-col and 3-col grids go single column */
-  .market-cards,
-  .problem-layout,
-  .difference-layout,
-  .value-cols,
-  .audience-layout,
-  .tech-grid,
-  .mission-grid,
-  .position-grid{grid-template-columns:1fr;}
+/* HERO */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;z-index:10;padding:100px 40px 80px;text-align:center;}
+.hero-inner{max-width:940px;width:100%;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:#22d3ee;margin-bottom:36px;animation:fadeUp .8s ease .3s both;}
+.hero-h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2.6rem,6vw,5.2rem);line-height:1.04;letter-spacing:-.02em;margin-bottom:28px;animation:fadeUp .9s ease .5s both;}
+.grad-white{background:linear-gradient(100deg,#f0f8ff 30%,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.grad-cyan{background:linear-gradient(100deg,#22d3ee,#38bdf8 60%,#0ea5e9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero-sub{font-size:1.08rem;line-height:1.85;color:#8da6bf;font-weight:300;max-width:700px;margin:0 auto 44px;animation:fadeUp .9s ease .7s both;}
+.tagline-row{display:flex;justify-content:center;margin-bottom:56px;animation:fadeUp .9s ease .9s both;}
+.tag-pill{padding:10px 24px;font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#22d3ee;border:1px solid rgba(34,211,238,.2);background:rgba(34,211,238,.03);}
+.tag-pill:first-child{border-radius:4px 0 0 4px;}
+.tag-pill:last-child{border-radius:0 4px 4px 0;}
+.tag-pill:not(:first-child){border-left:none;}
+.hero-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:820px;margin:0 auto;animation:fadeUp .9s ease 1.05s both;}
+.scroll-cue{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;animation:fadeIn 1s ease 1.5s both;}
+.scroll-line{width:1px;height:60px;background:linear-gradient(to bottom,#22d3ee,transparent);animation:pulse 2s ease infinite;}
+.scroll-lbl{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#94a3b8;}
 
-  /* Section spacing tightened */
-  .section-problem,.section-difference,.section-value,.section-audience,.section-technical{padding:70px 0;}
-  .section-position,.section-mission{padding:60px 0;}
+/* PROBLEM */
+#problem{padding:120px 0;}
+.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;}
+.problem-h2{font-family:'Syne',sans-serif;font-size:clamp(1.9rem,3vw,2.7rem);font-weight:700;line-height:1.1;letter-spacing:-.02em;margin-bottom:24px;}
+.problem-p{font-size:1rem;line-height:1.9;color:#7a96b0;font-weight:300;margin-bottom:16px;}
+.pull-quote{margin-top:32px;padding:24px 28px;border-left:2px solid #22d3ee;background:rgba(34,211,238,.04);border-radius:0 8px 8px 0;font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:600;color:#f0f8ff;line-height:1.65;}
+.fail-list{display:flex;flex-direction:column;gap:14px;}
+.fail-item{display:flex;align-items:flex-start;gap:16px;padding:20px 22px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(10px);transition:all .3s;}
+.fail-item:hover{border-color:rgba(34,211,238,.2);}
+.fail-icon{width:34px;height:34px;border-radius:8px;flex-shrink:0;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.15);display:flex;align-items:center;justify-content:center;font-size:.85rem;}
+.fail-h4{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700;color:#f0f8ff;margin-bottom:4px;}
+.fail-p{font-size:.82rem;color:#94a3b8;font-weight:300;line-height:1.6;}
 
-  /* Problem section */
-  .problem-layout{gap:40px;}
-  .problem-left h2{font-size:clamp(1.6rem,6vw,2.2rem);}
-  .pull-quote{font-size:0.95rem;padding:20px 22px;}
-  .fail-item{padding:16px 18px;}
+/* APPROACH */
+#difference{padding:100px 0;background:rgba(34,211,238,.012);}
+.pos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.pos-num{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:900;background:linear-gradient(135deg,#22d3ee,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;margin-bottom:12px;}
 
-  /* Position cards */
-  .position-center{margin-bottom:36px;}
-  .position-center h2{font-size:clamp(1.6rem,6vw,2.2rem);}
-  .position-grid{gap:12px;}
+/* AUDIENCE */
+#audience{padding:100px 0;}
+.aud-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px;}
 
-  /* Difference section */
-  .difference-layout{gap:40px;}
-  .difference-left h2{font-size:clamp(1.6rem,6vw,2.2rem);}
-  .ifd-wrap{max-width:100%;}
+/* TECHNICAL */
+#technical{padding:100px 0;background:rgba(34,211,238,.012);}
+.tech-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.tech-list{margin-top:12px;list-style:none;display:flex;flex-direction:column;gap:6px;}
+.tech-list li{font-size:.8rem;color:#94a3b8;font-weight:300;display:flex;align-items:center;gap:8px;}
+.tech-dot{width:4px;height:4px;border-radius:50%;background:#22d3ee;flex-shrink:0;box-shadow:0 0 4px #22d3ee;}
 
-  /* Value cols */
-  .value-cols{gap:16px;}
-  .value-col{padding:30px 24px;}
-  .value-header h2{font-size:clamp(1.6rem,6vw,2.2rem);}
+/* CONTACT */
+#contact{padding:120px 48px;text-align:center;position:relative;z-index:10;}
+.contact-inner{max-width:620px;margin:0 auto;}
+.contact-h2{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-.03em;margin-bottom:18px;line-height:1.1;}
+.contact-p{font-size:.98rem;color:#94a3b8;font-weight:300;margin-bottom:48px;line-height:1.8;}
+.contact-links{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;}
+.contact-link{display:flex;align-items:center;gap:10px;padding:14px 28px;border-radius:6px;border:1px solid rgba(34,211,238,.25);background:rgba(34,211,238,.04);color:#22d3ee;text-decoration:none;font-size:.88rem;font-weight:500;letter-spacing:.04em;transition:all .3s;}
+.contact-link:hover{border-color:#22d3ee;background:rgba(34,211,238,.1);}
+.contact-addr{cursor:default;pointer-events:none;}
+footer{padding:32px 48px;border-top:1px solid rgba(56,189,248,.08);display:flex;justify-content:space-between;align-items:center;position:relative;z-index:10;}
+.footer-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(90deg,#38bdf8,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.footer-copy{font-size:.78rem;color:#567898;font-family:'JetBrains Mono',monospace;}
 
-  /* Audience cards */
-  .audience-layout{gap:16px;}
-  .aud-card{padding:36px 28px;}
-  .aud-card h3{font-size:1.1rem;}
-  .audience-header h2{font-size:clamp(1.6rem,6vw,2.2rem);}
+/* ═══════════════════════════════════════════
+   TOOL OVERLAY
+═══════════════════════════════════════════ */
+#tool-overlay{position:fixed;inset:0;z-index:9000;display:none;flex-direction:column;background:var(--bg0);color:var(--text);font-family:var(--sans);overflow:hidden;}
+#tool-overlay.open{display:flex;}
 
-  /* Tech cards */
-  .tech-grid{gap:16px;}
-  .tech-card{padding:30px 24px;}
-  .section-header h2{font-size:clamp(1.6rem,6vw,2.2rem);}
+/* TOOL TOPBAR */
+.t-topbar{display:flex;align-items:center;height:60px;padding:0 28px;background:var(--bg1);border-bottom:1px solid var(--border);flex-shrink:0;gap:10px;}
+.t-logo{font-size:18px;font-weight:900;letter-spacing:-.3px;color:var(--text);white-space:nowrap;flex-shrink:0;}
+.t-logo span{color:var(--blue);}
+.t-tagline{font-family:var(--mono);font-size:9px;color:var(--text3);flex:1;text-align:center;padding:0 12px;line-height:1.6;}
+.t-spacer{flex:1;}
+.stat-pill{text-align:center;margin-left:20px;flex-shrink:0;}
+.stat-pill .num{font-family:var(--mono);font-size:19px;font-weight:700;line-height:1;}
+.stat-pill .lbl{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:1px;margin-top:1px;}
+.btn-add{margin-left:20px;background:var(--blue);color:#000;border:none;border-radius:7px;padding:9px 20px;font-family:var(--sans);font-weight:800;font-size:13px;cursor:pointer;transition:opacity .15s;flex-shrink:0;}
+.btn-add:hover{opacity:.82;}
+.btn-close-tool{margin-left:10px;background:none;border:1px solid var(--border2);color:var(--text3);border-radius:6px;padding:8px 14px;font-family:var(--mono);font-size:11px;cursor:pointer;flex-shrink:0;transition:all .15s;}
+.btn-close-tool:hover{color:var(--text);border-color:var(--text3);}
 
-  /* Mission */
-  .mission-grid{gap:16px;}
-  .mission-card{padding:36px 28px;}
-  .mission-num{font-size:2.8rem;}
+/* TOOL BODY */
+.t-body{display:flex;flex:1;overflow:hidden;min-height:0;}
+.pipeline{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 
-  /* Contact */
-  .contact-section{padding:80px 20px;}
-  .contact-section h2{font-size:clamp(1.8rem,7vw,2.4rem);}
-  .contact-links{flex-direction:column;align-items:center;gap:12px;}
-  .contact-link{width:100%;max-width:300px;justify-content:center;}
+/* SUMMARY STRIP */
+.summary-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border);flex-shrink:0;}
+.sum-card{background:var(--bg1);padding:13px 20px;}
+.sum-card .sc-num{font-family:var(--mono);font-size:28px;font-weight:700;line-height:1;}
+.sum-card .sc-lbl{font-family:var(--mono);font-size:9px;color:var(--text2);letter-spacing:1px;margin-top:2px;}
+.sum-card .sc-bar{height:3px;background:var(--bg3);border-radius:2px;margin-top:8px;overflow:hidden;}
+.sum-card .sc-fill{height:100%;border-radius:2px;transition:width .5s ease;}
 
-  /* Footer */
-  footer{flex-direction:column;gap:8px;text-align:center;padding:24px 20px;}
-}
+/* TABLE */
+.tbl-head{display:grid;grid-template-columns:34px 1fr 80px 80px 96px 120px 96px;gap:8px;padding:9px 20px;background:var(--bg0);border-bottom:1px solid var(--border);flex-shrink:0;}
+.tbl-head span{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-align:center;}
+.tbl-head span:nth-child(1),.tbl-head span:nth-child(2){text-align:left;}
+.tbl-body{flex:1;overflow-y:auto;}
+.trow{display:grid;grid-template-columns:34px 1fr 80px 80px 96px 120px 96px;gap:8px;padding:13px 20px;border-bottom:1px solid rgba(30,46,66,.7);align-items:center;transition:background .15s;cursor:pointer;}
+.trow:hover{background:#121e2e;}
+.trow.active{background:#0f1e30;border-left:3px solid var(--blue);}
+.row-rank{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--text3);}
+.row-name{font-size:13px;font-weight:700;color:var(--text);}
+.row-meta{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:2px;}
+.row-pct{text-align:center;}
+.row-pct .big{font-family:var(--mono);font-size:16px;font-weight:700;}
+.row-pct .tiny{font-family:var(--mono);font-size:9px;color:var(--text3);}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-family:var(--mono);font-size:11px;font-weight:700;}
+.row-actions{display:flex;gap:5px;justify-content:flex-end;}
+.btn-score{background:#0f1e30;border:1px solid var(--border2);color:var(--blue);border-radius:5px;padding:5px 11px;font-family:var(--mono);font-size:11px;cursor:pointer;}
+.btn-score:hover{background:#162636;}
+.btn-del{background:none;border:1px solid #3a1e1e;color:#5a2e2e;border-radius:5px;padding:5px 8px;font-family:var(--mono);font-size:11px;cursor:pointer;}
+.btn-del:hover{color:var(--red);border-color:#6a2020;}
+.t-empty{padding:80px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:13px;line-height:1.8;}
+
+/* PANEL */
+.panel{width:610px;min-width:610px;border-left:1px solid var(--border);display:flex;flex-direction:column;background:var(--bg1);overflow:hidden;}
+.panel-header{padding:16px 22px 13px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0;}
+.panel-eyebrow{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;margin-bottom:4px;}
+.panel-title{font-size:17px;font-weight:800;}
+.panel-meta{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:3px;}
+.btn-close{background:none;border:1px solid var(--border2);color:var(--text3);border-radius:6px;padding:5px 11px;font-family:var(--mono);font-size:11px;cursor:pointer;}
+.btn-close:hover{color:var(--text);border-color:var(--text3);}
+
+/* VERDICT BANNER */
+.v-banner{padding:14px 22px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.v-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.v-eyebrow{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:2px;margin-bottom:3px;}
+.v-decision{font-size:26px;font-weight:900;line-height:1;}
+.v-prob{font-family:var(--mono);font-size:32px;font-weight:700;}
+.pbar-wrap{margin-bottom:8px;}
+.pbar-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+.pbar-lbl{font-family:var(--mono);font-size:10px;color:var(--text2);}
+.pbar-pct{font-family:var(--mono);font-size:18px;font-weight:700;}
+.pbar-track{height:4px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.pbar-fill{height:100%;border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1);}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.tab{flex:1;background:none;border:none;border-bottom:3px solid transparent;color:var(--text3);padding:11px 0 9px;font-family:var(--sans);font-size:12px;font-weight:700;cursor:pointer;transition:color .15s;}
+.tab.active-go{color:var(--blue);border-bottom-color:var(--blue);}
+.tab.active-get{color:var(--purple);border-bottom-color:var(--purple);}
+.tab-note{font-family:var(--mono);font-size:9px;margin-top:2px;opacity:.5;}
+.score-hint{padding:7px 22px;background:rgba(56,189,248,.04);border-bottom:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--text3);flex-shrink:0;line-height:1.7;}
+
+/* CATEGORIES */
+.cats{flex:1;overflow-y:auto;padding:12px 18px 20px;}
+.cat{border:1px solid var(--border);border-radius:9px;margin-bottom:10px;overflow:hidden;transition:opacity .2s;}
+.cat.off{opacity:.45;}
+.cat-head{display:flex;align-items:center;gap:7px;padding:10px 14px;background:var(--bg2);cursor:pointer;user-select:none;}
+.cat-head:hover{background:var(--bg3);}
+.cat-icon{font-size:15px;flex-shrink:0;}
+.cat-name{flex:1;font-size:12px;font-weight:700;color:var(--text);line-height:1.3;}
+.cw-wrap{display:flex;align-items:center;gap:3px;flex-shrink:0;background:var(--bg0);border:1px solid var(--border2);border-radius:6px;padding:3px 8px;cursor:default;}
+.cw-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);}
+.cw-inp{width:36px;background:transparent;border:none;color:var(--text);font-family:var(--mono);font-size:12px;font-weight:700;text-align:center;outline:none;-moz-appearance:textfield;}
+.cw-inp::-webkit-inner-spin-button,.cw-inp::-webkit-outer-spin-button{-webkit-appearance:none;}
+.cw-pct{font-family:var(--mono);font-size:9px;color:var(--text3);}
+.cw-def{font-family:var(--mono);font-size:9px;color:var(--text4);min-width:14px;text-align:center;}
+.cw-modified{color:var(--yellow)!important;}
+.cw-reset{background:none;border:none;color:var(--yellow);font-size:14px;line-height:1;padding:0 2px;cursor:pointer;opacity:.85;}
+.cw-reset:hover{opacity:1;}
+.inc-toggle{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 9px;border-radius:12px;cursor:pointer;border:none;flex-shrink:0;transition:all .15s;}
+.inc-toggle.on{background:rgba(52,211,153,.18);color:var(--green);}
+.inc-toggle.off{background:rgba(248,113,113,.15);color:var(--red);}
+.cat-score{font-family:var(--mono);font-size:15px;font-weight:800;width:38px;text-align:right;flex-shrink:0;}
+.cat-mbar{width:50px;height:4px;background:var(--bg0);border-radius:2px;overflow:hidden;flex-shrink:0;}
+.cat-mfill{height:100%;border-radius:2px;transition:width .35s;}
+.cat-chev{font-size:10px;color:var(--text3);margin-left:2px;flex-shrink:0;}
+
+/* SUB ROWS */
+.cat-body{padding:8px 12px 12px;background:var(--bg0);}
+.sub-row{display:flex;align-items:center;gap:8px;padding:7px 10px;margin-bottom:5px;background:var(--bg2);border-radius:6px;border:1px solid var(--border);transition:opacity .2s;}
+.sub-row.off{opacity:.38;}
+.sub-chk{width:18px;height:18px;border-radius:4px;border:1px solid var(--border2);background:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;transition:all .15s;font-family:var(--mono);}
+.sub-chk.on{background:rgba(52,211,153,.2);border-color:var(--green);color:var(--green);}
+.sub-chk.off{background:rgba(248,113,113,.1);border-color:#6a2828;color:var(--red);}
+.sub-text{flex:1;font-family:var(--mono);font-size:11px;color:var(--text2);line-height:1.4;}
+.sw-wrap{display:flex;align-items:center;gap:3px;flex-shrink:0;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:2px 6px;cursor:default;}
+.sw-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);}
+.sw-inp{width:26px;background:transparent;border:none;color:var(--text2);font-family:var(--mono);font-size:11px;font-weight:700;text-align:center;outline:none;-moz-appearance:textfield;}
+.sw-inp::-webkit-inner-spin-button,.sw-inp::-webkit-outer-spin-button{-webkit-appearance:none;}
+.sw-def{font-family:var(--mono);font-size:9px;color:var(--text4);min-width:12px;text-align:center;}
+.sw-modified{color:var(--yellow)!important;}
+.sw-reset{background:none;border:none;color:var(--yellow);font-size:13px;line-height:1;padding:0 1px;cursor:pointer;opacity:.8;}
+.sw-reset:hover{opacity:1;}
+.sub-btns{display:flex;gap:2px;flex-shrink:0;}
+.sbt{width:26px;height:24px;border:none;border-radius:4px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;transition:all .12s;background:var(--bg3);color:var(--text2);}
+.sbt.a0{background:#7f1d1d;color:#fff;}.sbt.a1{background:#f87171;color:#000;}.sbt.a2{background:#fca5a5;color:#000;}.sbt.a3{background:#fbbf24;color:#000;}.sbt.a4{background:#86efac;color:#000;}.sbt.a5{background:#34d399;color:#000;}
+.sub-lbl{font-family:var(--mono);font-size:9px;width:58px;text-align:right;flex-shrink:0;}
+.panel-footer{padding:13px 22px;border-top:1px solid var(--border);flex-shrink:0;}
+.btn-save{width:100%;padding:13px;border:none;border-radius:8px;font-family:var(--sans);font-weight:800;font-size:14px;cursor:pointer;transition:opacity .15s;}
+.btn-save:hover{opacity:.84;}
+.cats::-webkit-scrollbar,.tbl-body::-webkit-scrollbar{width:4px;}
+.cats::-webkit-scrollbar-track,.tbl-body::-webkit-scrollbar-track{background:transparent;}
+.cats::-webkit-scrollbar-thumb,.tbl-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* TOOL MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:9500;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:34px;width:420px;}
+.modal-title{font-size:19px;font-weight:900;margin-bottom:6px;color:var(--text);}
+.modal-sub{font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:26px;line-height:1.6;}
+.field{margin-bottom:16px;}
+.field-lbl{font-family:var(--mono);font-size:9px;color:var(--text2);letter-spacing:2px;margin-bottom:7px;}
+.field-inp{width:100%;background:var(--bg1);border:1px solid var(--border2);border-radius:7px;padding:11px 13px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;transition:border-color .15s;}
+.field-inp::placeholder{color:var(--text4);}
+.field-inp:focus{border-color:var(--blue);}
+.btn-create{width:100%;padding:13px;background:var(--blue);color:#000;border:none;border-radius:8px;font-family:var(--sans);font-weight:800;font-size:14px;cursor:pointer;margin-top:10px;transition:opacity .15s;}
+.btn-create:hover{opacity:.84;}
 </style>
 </head>
 <body>
 
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
 <div class="bg-gradient"></div>
-<canvas id="gridCanvas"></canvas>
-<canvas id="particleCanvas"></canvas>
+<canvas id="grid-canvas"></canvas>
+<canvas id="particle-canvas"></canvas>
 
+<!-- ═══════════════════════════════════════════
+     WEBSITE
+════════════════════════════════════════════ -->
+<div id="website">
+
+<!-- HEADER -->
 <header>
-  <div class="logo">Kinward Energy</div>
+  <span class="w-logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">Kinward Energy</span>
   <nav>
-    <a href="#problem">The Problem</a>
-    <a href="#difference">Approach</a>
-    <a href="#audience">Who We Serve</a>
-    <a href="#technical">Technical Focus</a>
-    <a href="#contact" class="nav-cta">Contact Us</a>
+    <button class="nav-link" onclick="document.getElementById('problem').scrollIntoView({behavior:'smooth'})">The Problem</button>
+    <button class="nav-link" onclick="document.getElementById('difference').scrollIntoView({behavior:'smooth'})">Approach</button>
+    <button class="nav-link" onclick="document.getElementById('audience').scrollIntoView({behavior:'smooth'})">Who We Serve</button>
+    <button class="nav-link" onclick="document.getElementById('technical').scrollIntoView({behavior:'smooth'})">Technical Focus</button>
+    <button class="nav-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Contact Us</button>
+    <button class="nav-tool" onclick="openTool()">Data Center Decision Tool</button>
   </nav>
 </header>
 
-<section class="hero">
+<!-- HERO -->
+<section class="hero w-section">
   <div class="hero-inner">
     <div class="hero-eyebrow">Development-Phase Infrastructure Integration</div>
-    <h1>
-      <span class="l1">Infrastructure fails in development </span>
-      <span class="l2">not in construction. We integrate it before it breaks.</span>
+    <h1 class="hero-h1">
+      <span class="grad-white" style="display:block">Infrastructure fails in development —</span>
+      <span class="grad-cyan" style="display:block">not in construction. We integrate it before it breaks.</span>
     </h1>
     <p class="hero-sub">
-      Kinward Energy is a development-phase infrastructure integrator. We align technology, grid strategy, engineering configuration, and capital assumptions before projects reach financial commitment — compressing development risk and protecting financial close.
-      <br><br>
-      By integrating technical, commercial, and utility realities early, we transform ambitious renewable energy and data center concepts into infrastructure that works reliably, responsibly, and at scale.
+      Kinward Energy is a development-phase infrastructure integrator. We align technology, grid strategy, engineering configuration, and capital assumptions before projects reach financial commitment — compressing development risk and protecting financial close.<br><br>
+      By integrating technical, commercial, and utility realities early, we transform ambitious renewable energy and data center concepts into infrastructure that works — reliably, responsibly, and at scale.
     </p>
-    <div class="hero-tagline">
+    <div class="tagline-row">
       <div class="tag-pill">Energizable</div>
       <div class="tag-pill">Buildable</div>
       <div class="tag-pill">Enduring</div>
     </div>
-    <div class="hero-markets">
-      <div class="hero-markets-label">Who We Serve</div>
-      <div class="market-cards">
-        <div class="market-card">
-          <div class="market-tag"><div class="market-dot"></div>Energy Developer</div>
-          <h3>Renewable Energy Projects</h3>
-          <p>From feasibility through RTB, we integrate grid strategy, technology selection, and engineering configuration so your project reaches financial close with certainty.</p>
-        </div>
-        <div class="market-card">
-          <div class="market-tag"><div class="market-dot"></div>Data Center Developer</div>
-          <h3>Data Center Power Infrastructure</h3>
-          <p>We challenge and integrate on-site and grid-connected power systems — making sure every technology choice is coherent, constructable, and aligned to your load and resilience requirements.</p>
-        </div>
+    <div class="hero-cards">
+      <div class="glass-card" style="text-align:left">
+        <div class="card-tag"><span class="card-dot"></span>Renewable Energy</div>
+        <h3 class="card-h3">Independent Power Producers &amp; Developers</h3>
+        <p class="card-p">We work alongside IPP development teams to pressure-test grid access strategies, technology configurations, and capital structures before they become expensive mistakes.</p>
+      </div>
+      <div class="glass-card" style="text-align:left">
+        <div class="card-tag"><span class="card-dot"></span>Data Center Infrastructure</div>
+        <h3 class="card-h3">Data Center Developers &amp; Hyperscalers</h3>
+        <p class="card-p">We help data center developers navigate power procurement complexity — from interconnection queue positioning to on-site generation integration and redundancy design.</p>
       </div>
     </div>
-  </div>
-  <div class="hero-scroll">
-    <div class="scroll-text">Scroll</div>
-    <div class="scroll-line"></div>
+    <div class="scroll-cue">
+      <div class="scroll-line"></div>
+      <span class="scroll-lbl">Scroll</span>
+    </div>
   </div>
 </section>
 
-<div class="divider"></div>
+<div class="w-divider"></div>
 
-<section id="problem" class="section section-problem">
+<!-- PROBLEM -->
+<section id="problem" class="w-section" style="padding:120px 0">
   <div class="container">
-    <div class="problem-layout">
-      <div class="problem-left reveal">
-        <div class="section-label">The Market Reality</div>
-        <h2>Project attrition begins in development — <em>not execution.</em></h2>
-        <p>The world is racing toward clean energy and digital expansion. But speed without integration creates fragility. Projects stall. Interconnection assumptions collapse. Costs surface too late. Technology outpaces feasibility.</p>
-        <p>The failure is rarely vision. It is fragmentation.</p>
-        <div class="pull-quote">
-          "These risks are often embedded in early-stage assumptions — long before capital is fully committed."
-        </div>
+    <div class="problem-grid reveal">
+      <div>
+        <div class="section-label">The Infrastructure Problem</div>
+        <h2 class="problem-h2">Most infrastructure projects fail in <em style="font-style:normal;color:#22d3ee">development</em> — before a shovel hits the ground.</h2>
+        <p class="problem-p">Developers commit capital to projects built on assumptions that don't survive contact with reality — grid constraints that weren't modeled, technology configurations that can't be financed, utility timelines that destroy returns.</p>
+        <p class="problem-p">The result isn't a construction problem. It's a development problem. And it compounds at every stage: bad assumptions become bad designs, bad designs become unbuildable projects, unbuildable projects become stranded capital.</p>
+        <div class="pull-quote">"The gap between what developers assume and what utilities, engineers, and capital markets will actually support has never been wider — or more expensive."</div>
       </div>
-      <div class="reveal reveal-delay-2">
-        <div class="section-label">Key Failure Drivers</div>
-        <div class="failure-list">
-          <div class="fail-item">
-            <div class="fail-icon">⚠</div>
-            <div class="fail-content">
-              <h4>Interconnection Cost Escalation</h4>
-              <p>Late-discovered grid upgrade requirements can collapse project economics entirely.</p>
-            </div>
-          </div>
-          <div class="fail-item">
-            <div class="fail-icon">🔌</div>
-            <div class="fail-content">
-              <h4>Utility Misalignment</h4>
-              <p>Disconnects between developer intent and utility strategy cause fatal schedule delays.</p>
-            </div>
-          </div>
-          <div class="fail-item">
-            <div class="fail-icon">⚙</div>
-            <div class="fail-content">
-              <h4>Technology-Site Incompatibility</h4>
-              <p>Technology selected without site context creates rework that kills timelines and budgets.</p>
-            </div>
-          </div>
-          <div class="fail-item">
-            <div class="fail-icon">🏗</div>
-            <div class="fail-content">
-              <h4>Constructability Gaps</h4>
-              <p>Engineering ambition that outpaces EPC realities surfaces as costly redesigns at bid stage.</p>
-            </div>
-          </div>
-          <div class="fail-item">
-            <div class="fail-icon">💰</div>
-            <div class="fail-content">
-              <h4>Capital Stack Fragility</h4>
-              <p>Incomplete RTB packages erode investor confidence and threaten financial close.</p>
-            </div>
-          </div>
-        </div>
+      <div class="fail-list">
+        <div class="fail-item"><div class="fail-icon">⚡</div><div><h4 class="fail-h4">Grid Access Failures</h4><p class="fail-p">Interconnection queue positions lost, substation capacity assumptions wrong, transmission upgrade costs that destroy project economics.</p></div></div>
+        <div class="fail-item"><div class="fail-icon">🏗️</div><div><h4 class="fail-h4">Constructability Gaps</h4><p class="fail-p">Technology configurations that look good on paper but can't be built on schedule, on budget, or to the performance specs required for financing.</p></div></div>
+        <div class="fail-item"><div class="fail-icon">💰</div><div><h4 class="fail-h4">Capital Structure Misalignment</h4><p class="fail-p">Debt and equity assumptions that don't match the actual risk profile of the project — discovered at financial close, not development entry.</p></div></div>
+        <div class="fail-item"><div class="fail-icon">🔌</div><div><h4 class="fail-h4">Technology Integration Failures</h4><p class="fail-p">On-site generation, storage, and grid systems that weren't designed to work together — or with the utility interconnection requirements.</p></div></div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="divider"></div>
+<div class="w-divider"></div>
 
-<section class="section section-position">
+<!-- APPROACH -->
+<section id="difference" class="w-section">
   <div class="container">
-    <div class="position-center reveal">
-      <div class="section-label" style="justify-content:center">Our Position</div>
-      <h2>We operate at the <em>highest leverage point</em> in the project lifecycle.</h2>
-      <p>Kinward Energy is not an EPC. Not a pure consultant. Not a study producer. We are a development-phase infrastructure integrator — aligning technology selection, site and grid feasibility, engineering configuration, utility strategy, cost realism, and bankability standards before capital is fully committed.</p>
+    <div class="sec-center reveal">
+      <div class="section-label">The Kinward Approach</div>
+      <h2 class="sec-h2">We integrate infrastructure <em style="font-style:normal;background:linear-gradient(90deg,#22d3ee,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent">before it breaks</em></h2>
+      <p class="sec-p">Kinward Energy works at the intersection of grid strategy, engineering configuration, and capital structure — aligning all three before development decisions become irreversible.</p>
     </div>
-    <div class="position-grid reveal">
-      <div class="pos-card reveal-delay-1">
-        <div class="pos-num">01 — FROM</div>
-        <h4>Feasibility</h4>
-        <p>Site selection, grid screening, and technology-site compatibility validated before capital is at risk.</p>
-      </div>
-      <div class="pos-card reveal-delay-2">
-        <div class="pos-num">02 — THROUGH</div>
-        <h4>Integration</h4>
-        <p>Technical alignment across engineering, utility coordination, EPC scope, and capital requirements.</p>
-      </div>
-      <div class="pos-card reveal-delay-3">
-        <div class="pos-num">03 — TO</div>
-        <h4>RTB Certainty</h4>
-        <p>Coherent, defensible Ready-to-Build packages that protect financial close and EPC bid confidence.</p>
-      </div>
+    <div class="pos-grid reveal">
+      <div class="glass-card"><div class="pos-num">01</div><h3 class="card-h3">Grid-First Development Strategy</h3><p class="card-p">We map interconnection realities before development commitments are made — queue positioning, substation capacity, transmission constraints, and utility timelines that actually match project schedules.</p></div>
+      <div class="glass-card"><div class="pos-num">02</div><h3 class="card-h3">Technology Configuration Integration</h3><p class="card-p">We challenge and integrate on-site and grid-connected power systems — making sure every technology choice is coherent, constructable, and aligned to your load and resilience requirements.</p></div>
+      <div class="glass-card"><div class="pos-num">03</div><h3 class="card-h3">Capital Structure Alignment</h3><p class="card-p">We stress-test development assumptions against what debt and equity markets will actually support — identifying misalignments before they surface at financial close.</p></div>
     </div>
   </div>
 </section>
 
-<div class="divider"></div>
+<div class="w-divider"></div>
 
-<section id="difference" class="section section-difference">
+<!-- AUDIENCE -->
+<section id="audience" class="w-section">
   <div class="container">
-    <div class="difference-layout">
-      <div class="difference-left reveal">
-        <div class="section-label">The Kinward Energy Difference</div>
-        <h2>We own the interfaces <em>others overlook.</em></h2>
-        <p>Between technology and terrain. Between grid capacity and capital deployment. Between engineering ambition and operational reality.</p>
-        <p>We do not produce more studies. We create alignment. And alignment creates certainty.</p>
-        <div class="interface-statement">
-          <p>We are development-phase infrastructure stewards.</p>
-          <span>We turn feasibility into certainty.</span>
-        </div>
-      </div>
-      <div class="reveal reveal-delay-2">
-        <div class="ifd-wrap">
-          <div class="ifd-row">
-            <div class="ifd-bubble"><div class="ifd-b-label">Technology</div><div class="ifd-b-sub">Selection &amp; Architecture</div></div>
-            <div class="ifd-bubble"><div class="ifd-b-label">Site &amp; Grid</div><div class="ifd-b-sub">Feasibility</div></div>
-          </div>
-          <div class="ifd-vline"></div>
-          <div class="ifd-center-box">
-            <div class="ifd-c-label">Kinward Energy</div>
-            <div class="ifd-c-main">Integration Layer</div>
-            <div class="ifd-c-sub">Interface Management · Development Phase</div>
-          </div>
-          <div class="ifd-vline"></div>
-          <div class="ifd-row">
-            <div class="ifd-bubble"><div class="ifd-b-label">Utility Strategy</div><div class="ifd-b-sub">Coordination</div></div>
-            <div class="ifd-bubble"><div class="ifd-b-label">RTB Package</div><div class="ifd-b-sub">Bankability</div></div>
-          </div>
-          <div class="ifd-rtb">
-            <div class="ifd-rtb-pill">Development Phase → Ready to Build</div>
-          </div>
-        </div>
-      </div>
+    <div class="sec-center reveal">
+      <div class="section-label">Who We Serve</div>
+      <h2 class="sec-h2">Built for developers who can't afford development-phase failures</h2>
+      <p class="sec-p">We work with organizations where infrastructure failure in development has real consequences — for capital, schedules, and stakeholder confidence.</p>
+    </div>
+    <div class="aud-grid">
+      <div class="glass-card reveal"><div class="card-tag"><span class="card-dot"></span>Independent Power Producers</div><h3 class="card-h3">IPP Development Teams</h3><p class="card-p">We embed in your development process — challenging grid assumptions, stress-testing technology configurations, and aligning capital structures before you're committed to a path that can't be financed.</p></div>
+      <div class="glass-card reveal"><div class="card-tag"><span class="card-dot"></span>Data Center Infrastructure</div><h3 class="card-h3">Data Center Developers</h3><p class="card-p">Power is the critical path. We work through interconnection strategy, on-site generation integration, and utility coordination — so your data center reaches energization on schedule.</p></div>
+      <div class="glass-card reveal"><div class="card-tag"><span class="card-dot"></span>Energy Project Finance</div><h3 class="card-h3">Infrastructure Investors &amp; Lenders</h3><p class="card-p">We provide independent technical and commercial review of development-stage assets — identifying the infrastructure risks that aren't visible in the financial model.</p></div>
     </div>
   </div>
 </section>
 
-<div class="divider"></div>
+<div class="w-divider"></div>
 
-<section class="section section-value">
+<!-- TECHNICAL -->
+<section id="technical" class="w-section">
   <div class="container">
-    <div class="value-header reveal">
-      <div class="section-label" style="justify-content:center">Value Proposition</div>
-      <h2>How we compress development risk.</h2>
-      <p>Our work increases probability of financial close, EPC bid confidence, investor trust, and execution certainty.</p>
-    </div>
-    <div class="value-cols">
-      <div class="value-col reveal reveal-delay-1">
-        <div class="col-glow"></div>
-        <div class="col-icon">🛡</div>
-        <h3>We Compress Development Risk By</h3>
-        <ul class="check-list">
-          <li>Protecting interconnection positions before they are lost</li>
-          <li>Preventing late-stage engineering rework that kills schedules</li>
-          <li>Aligning technical scope with EPC realities from day one</li>
-          <li>Delivering coherent, defensible RTB packages</li>
-          <li>Reducing schedule volatility across the development lifecycle</li>
-        </ul>
-      </div>
-      <div class="value-col reveal reveal-delay-2">
-        <div class="col-glow"></div>
-        <div class="col-icon">📈</div>
-        <h3>Our Work Increases</h3>
-        <ul class="check-list">
-          <li>Probability of financial close</li>
-          <li>EPC bid confidence and price certainty</li>
-          <li>Investor trust through defensible technical packages</li>
-          <li>Execution certainty across all project phases</li>
-          <li>Long-term infrastructure resilience and performance</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<section id="audience" class="section section-audience">
-  <div class="container">
-    <div class="audience-header reveal">
-      <div class="section-label" style="justify-content:center">Who We Serve</div>
-      <h2>Built for two critical markets.</h2>
-      <p>Whether you are developing utility-scale renewable projects or data center power infrastructure, Kinward Energy integrates what others leave fragmented.</p>
-    </div>
-    <div class="audience-layout">
-      <div class="aud-card reveal reveal-delay-1">
-        <div class="aud-tag">⚡ Energy Developer</div>
-        <h3>Renewable Energy Projects</h3>
-        <p>We embed into your development lifecycle from early feasibility through RTB — aligning grid strategy, technology selection, and engineering configuration so your project reaches financial close with certainty.</p>
-        <ul class="aud-list">
-          <li>Interconnection position protection and utility strategy</li>
-          <li>Technology-site compatibility validated before capital is deployed</li>
-          <li>Techno-economic optimization tied to real EPC realities</li>
-          <li>RTB packages that withstand investor and lender scrutiny</li>
-          <li>Constructability challenged before bid — not after</li>
-        </ul>
-      </div>
-      <div class="aud-card reveal reveal-delay-2">
-        <div class="aud-tag">🖥 Data Center Developer</div>
-        <h3>Data Center Power Infrastructure</h3>
-        <p>We act as the integration layer — challenging and aligning on-site and grid-connected power systems against your load requirements, resilience standards, and capital targets. We make sure nothing is left unresolved and every technical interface is owned.</p>
-        <ul class="aud-list">
-          <li>Integration of behind-the-meter solar PV and BESS for load management</li>
-          <li>Fuel cell and green hydrogen systems challenged for fit and constructability</li>
-          <li>Grid interconnection and utility coordination strategy</li>
-          <li>Power architecture aligned to uptime, PUE, and capex targets</li>
-          <li>Scalable integration frameworks for phased data center expansion</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<section id="technical" class="section section-technical">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-label" style="justify-content:center">Technical Focus</div>
-      <h2>Infrastructure intelligence, end to end.</h2>
-      <p>We support and integrate across the full energy technology stack — leading every discipline from site feasibility through RTB package delivery. The result is not documentation. It is disciplined infrastructure.</p>
+    <div class="sec-center reveal">
+      <div class="section-label">Technical Focus Areas</div>
+      <h2 class="sec-h2">Deep technical capability across the <em style="font-style:normal;background:linear-gradient(90deg,#22d3ee,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent">full infrastructure stack</em></h2>
+      <p class="sec-p">We don't generalize. We go deep on the specific technical domains where development-phase failures are most expensive and most avoidable.</p>
     </div>
     <div class="tech-grid">
-      <div class="tech-card reveal reveal-delay-1">
-        <div class="card-glow"></div>
-        <div class="card-icon">⚡</div>
-        <h3>Technologies We Integrate</h3>
-        <ul class="tech-list">
-          <li>Utility-scale solar PV</li>
-          <li>Battery Energy Storage Systems (BESS)</li>
-          <li>Fuel cells &amp; distributed generation</li>
-          <li>Green hydrogen and Power-to-X</li>
-          <li>Hybrid &amp; behind-the-meter power for data centers</li>
-        </ul>
-      </div>
-      <div class="tech-card reveal reveal-delay-2">
-        <div class="card-glow"></div>
-        <div class="card-icon">🔗</div>
-        <h3>Development Services We Lead</h3>
-        <ul class="tech-list">
-          <li>Site &amp; grid feasibility</li>
-          <li>Technology selection &amp; system architecture</li>
-          <li>Conceptual engineering</li>
-          <li>Techno-economic optimization</li>
-          <li>Utility &amp; transmission coordination</li>
-          <li>RTB technical package preparation</li>
-        </ul>
-      </div>
+      <div class="glass-card reveal"><div class="card-tag"><span class="card-dot"></span>Grid &amp; Interconnection</div><h3 class="card-h3">Grid Access &amp; Interconnection Strategy</h3><p class="card-p">Interconnection queue management, substation capacity analysis, transmission constraint modeling, and utility coordination strategy.</p><ul class="tech-list"><li><span class="tech-dot"></span>Queue position strategy and protection</li><li><span class="tech-dot"></span>Substation and transformer capacity validation</li><li><span class="tech-dot"></span>Transmission upgrade cost modeling</li><li><span class="tech-dot"></span>Utility timeline alignment</li></ul></div>
+      <div class="glass-card reveal"><div class="card-tag"><span class="card-dot"></span>Power Systems</div><h3 class="card-h3">On-Site Generation &amp; Storage Integration</h3><p class="card-p">Technology selection, configuration design, and integration architecture for on-site generation, storage, and hybrid systems.</p><ul class="tech-list"><li><span class="tech-dot"></span>Solar, wind, and storage configuration</li><li><span class="tech-dot"></span>Gas peaker and fuel cell integration</li><li><span class="tech-dot"></span>Hybrid system architecture</li><li><span class="tech-dot"></span>Grid-forming inverter strategy</li></ul></div>
+      <div class="glass-card reveal"><div class="card-tag"><span class="card-dot"></span>Data Center Power</div><h3 class="card-h3">Data Center Power Infrastructure</h3><p class="card-p">Power procurement strategy, redundancy design, and utility coordination for hyperscale and colocation data center development.</p><ul class="tech-list"><li><span class="tech-dot"></span>Power procurement and PPA structuring</li><li><span class="tech-dot"></span>Redundancy architecture (N, N+1, 2N)</li><li><span class="tech-dot"></span>On-site generation for data centers</li><li><span class="tech-dot"></span>Constructability review before bid</li></ul></div>
+      <div class="glass-card reveal"><div class="card-tag"><span class="card-dot"></span>Capital &amp; Finance</div><h3 class="card-h3">Infrastructure Capital Structure</h3><p class="card-p">Development-stage capital structure design and stress-testing aligned to actual infrastructure risk profiles and debt/equity market requirements.</p><ul class="tech-list"><li><span class="tech-dot"></span>Development-stage risk identification</li><li><span class="tech-dot"></span>Debt sizing and covenant alignment</li><li><span class="tech-dot"></span>Tax equity and ITC/PTC optimization</li><li><span class="tech-dot"></span>Financial close readiness review</li></ul></div>
     </div>
   </div>
 </section>
 
-<div class="divider"></div>
+<div class="w-divider"></div>
 
-<section class="section section-mission">
-  <div class="container">
-    <div class="section-header reveal">
-      <div class="section-label" style="justify-content:center">Foundation</div>
-      <h2>Built on three commitments.</h2>
-    </div>
-    <div class="mission-grid">
-      <div class="mission-card reveal reveal-delay-1">
-        <div class="mission-num">01</div>
-        <h3>Mission</h3>
-        <p>To integrate power infrastructure with discipline and foresight — transforming early-stage ambition into systems that endure.</p>
-      </div>
-      <div class="mission-card reveal reveal-delay-2">
-        <div class="mission-num">02</div>
-        <h3>Vision</h3>
-        <p>A world where energy infrastructure is built with long-term responsibility — where power systems are not only fast and scalable, but intelligent, resilient, and worthy of the generations that inherit them.</p>
-      </div>
-      <div class="mission-card reveal reveal-delay-3">
-        <div class="mission-num">03</div>
-        <h3>Promise</h3>
-        <p>We measure success not only in megawatts delivered, but in infrastructure that performs, protects capital, and strengthens communities for decades.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="contact" class="contact-section">
+<!-- CONTACT -->
+<section id="contact" class="w-section">
   <div class="contact-inner reveal">
-    <div class="section-label" style="justify-content:center;margin-bottom:20px">Let's Build Together</div>
-    <h2>Partner with <span>Kinward Energy</span></h2>
-    <p>Serious infrastructure deserves serious partners. Whether you are developing a renewable energy project or data center power infrastructure — reach out to start the conversation.</p>
+    <div class="section-label" style="justify-content:center">Let's Build Together</div>
+    <h2 class="contact-h2">Partner with <span style="background:linear-gradient(90deg,#22d3ee,#38bdf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Kinward Energy</span></h2>
+    <p class="contact-p">Serious infrastructure deserves serious partners. Whether you are developing a renewable energy project or data center power infrastructure — reach out to start the conversation.</p>
     <div class="contact-links">
-      <a href="mailto:business@kinward.com" class="contact-link">
-        <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
-        business@kinward.com
+      <a href="mailto:business@kinwardenergy.com" class="contact-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+        business@kinwardenergy.com
       </a>
-      <a href="tel:+13468839217" class="contact-link">
-        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.25h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.95a16 16 0 0 0 6 6l.86-.86a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-        +1 346 883 9217
-      </a>
+      <div class="contact-link contact-addr">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        5900 Balcones Drive STE 100, Austin TX, USA
+      </div>
     </div>
   </div>
 </section>
@@ -630,66 +457,266 @@ footer{border-top:1px solid rgba(56,189,248,0.07);padding:28px 48px;display:flex
   <div class="footer-copy">© 2025 Kinward Energy. Development-Phase Infrastructure Integration.</div>
 </footer>
 
+</div><!-- end #website -->
+
+<!-- ═══════════════════════════════════════════
+     TOOL OVERLAY
+════════════════════════════════════════════ -->
+<div id="tool-overlay">
+
+  <!-- TOPBAR -->
+  <div class="t-topbar">
+    <div class="t-logo">Data Center <span>Decision Matrix</span></div>
+    <div class="t-tagline">Prioritize the data center opportunities that matter · GO × GET Probability Model</div>
+    <div class="stat-pill"><div class="num" style="color:#4ade80" id="cnt-bid">0</div><div class="lbl">BID</div></div>
+    <div class="stat-pill"><div class="num" style="color:#fbbf24" id="cnt-cond">0</div><div class="lbl">CONDITIONAL</div></div>
+    <div class="stat-pill"><div class="num" style="color:#f87171" id="cnt-nobid">0</div><div class="lbl">NO-BID</div></div>
+    <div class="stat-pill"><div class="num" style="color:#304860" id="cnt-un">0</div><div class="lbl">UNSCORED</div></div>
+    <button class="btn-add" onclick="openAdd()">+ Add Project</button>
+    <button class="btn-close-tool" onclick="closeTool()">✕ Close</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="t-body">
+    <div class="pipeline">
+      <div class="summary-strip" id="summary"></div>
+      <div class="tbl-head">
+        <span>#</span><span>PROJECT</span><span>GO %</span><span>GET %</span>
+        <span>WIN PROB</span><span>DECISION</span><span></span>
+      </div>
+      <div class="tbl-body" id="tbl-body">
+        <div class="t-empty">No projects yet.<br>Click <strong>+ Add Project</strong> to begin.</div>
+      </div>
+    </div>
+    <div class="panel" id="panel" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">New Opportunity</div>
+    <div class="modal-sub">Add a data center project to the decision matrix.</div>
+    <div class="field"><div class="field-lbl">PROJECT NAME</div>
+      <input class="field-inp" id="inp-name" placeholder="e.g. Phoenix AI Campus Phase 1"
+        onkeydown="if(event.key==='Enter')createProject()"></div>
+    <div class="field"><div class="field-lbl">LOCATION</div>
+      <input class="field-inp" id="inp-loc" placeholder="e.g. Phoenix, Arizona"></div>
+    <div class="field"><div class="field-lbl">TARGET MW</div>
+      <input class="field-inp" id="inp-mw" placeholder="e.g. 150" type="number"></div>
+    <button class="btn-create" onclick="createProject()">Create & Score →</button>
+  </div>
+</div>
+
 <script>
-const isMobile=window.innerWidth<=768||('ontouchstart' in window);
-const cursor=document.getElementById('cursor'),cursorRing=document.getElementById('cursorRing');
+// ═══════════════════════════════════════════
+//  WEBSITE JS
+// ═══════════════════════════════════════════
+
+// Custom cursor
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
 let mx=0,my=0,rx=0,ry=0;
-if(!isMobile){
-  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=(mx-6)+'px';cursor.style.top=(my-6)+'px';});
-  (function ac(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;cursorRing.style.left=(rx-20)+'px';cursorRing.style.top=(ry-20)+'px';requestAnimationFrame(ac);})();
-}
-document.querySelectorAll('a,.tag-pill,.market-card,.tech-card,.mission-card,.aud-card,.fail-item,.pos-card,.value-col,.ifd-bubble').forEach(el=>{
-  el.addEventListener('mouseenter',()=>{cursor.style.transform='scale(2)';cursorRing.style.transform='scale(1.5)';cursorRing.style.borderColor='rgba(34,211,238,0.8)';});
-  el.addEventListener('mouseleave',()=>{cursor.style.transform='scale(1)';cursorRing.style.transform='scale(1)';cursorRing.style.borderColor='rgba(34,211,238,0.5)';});
-});
-const gridCanvas=document.getElementById('gridCanvas'),gc=gridCanvas.getContext('2d');
-function resizeGrid(){gridCanvas.width=window.innerWidth;gridCanvas.height=window.innerHeight;}
-resizeGrid();
-const CELL=80;let gridOffset=0;
-(function dg(){
-  gc.clearRect(0,0,gridCanvas.width,gridCanvas.height);
-  gridOffset=(gridOffset+0.15)%CELL;
-  gc.strokeStyle='rgba(56,189,248,0.18)';gc.lineWidth=0.5;
-  for(let x=gridOffset%CELL;x<gridCanvas.width+CELL;x+=CELL){gc.beginPath();gc.moveTo(x,0);gc.lineTo(x,gridCanvas.height);gc.stroke();}
-  for(let y=gridOffset%CELL;y<gridCanvas.height+CELL;y+=CELL){gc.beginPath();gc.moveTo(0,y);gc.lineTo(gridCanvas.width,y);gc.stroke();}
-  gc.fillStyle='rgba(34,211,238,0.6)';
-  for(let x=gridOffset%CELL;x<gridCanvas.width+CELL;x+=CELL)
-    for(let y=gridOffset%CELL;y<gridCanvas.height+CELL;y+=CELL)
-      if(Math.random()>0.998){gc.beginPath();gc.arc(x,y,2,0,Math.PI*2);gc.fill();}
-  requestAnimationFrame(dg);
-})();
-const pc=document.getElementById('particleCanvas'),ctx=pc.getContext('2d');
-function resizePC(){pc.width=window.innerWidth;pc.height=window.innerHeight;}
-resizePC();
-class P{
-  constructor(){this.reset(true);}
-  reset(init){this.x=Math.random()*pc.width;this.y=init?Math.random()*pc.height:Math.random()*pc.height;this.size=Math.random()*1.4+0.3;this.speed=Math.random()*0.35+0.1;this.angle=Math.random()*Math.PI*2;this.wobble=Math.random()*0.018-0.009;this.life=init?Math.floor(Math.random()*300):0;this.maxLife=Math.random()*400+200;this.hue=Math.random()>0.5?'34,211,238':'56,189,248';}
-  update(){this.angle+=this.wobble;this.x+=Math.cos(this.angle)*this.speed;this.y+=Math.sin(this.angle)*this.speed;this.life++;if(this.life>this.maxLife||this.x<-10||this.x>pc.width+10||this.y<-10||this.y>pc.height+10)this.reset(false);}
-  draw(){const a=Math.sin((this.life/this.maxLife)*Math.PI)*0.65;ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fillStyle=`rgba(${this.hue},${a})`;ctx.fill();}
-}
-class S{
-  constructor(init){this.reset(init);}
-  reset(init){this.x=Math.random()*pc.width;this.y=init?Math.random()*pc.height:-30;this.len=Math.random()*70+20;this.speed=Math.random()*1.2+0.4;this.alpha=Math.random()*0.12+0.04;this.width=Math.random()*0.7+0.2;this.hue=Math.random()>0.5?'34,211,238':'56,189,248';}
-  update(){this.y+=this.speed;if(this.y>pc.height+this.len)this.reset(false);}
-  draw(){const g=ctx.createLinearGradient(this.x,this.y-this.len,this.x,this.y);g.addColorStop(0,`rgba(${this.hue},0)`);g.addColorStop(1,`rgba(${this.hue},${this.alpha})`);ctx.strokeStyle=g;ctx.lineWidth=this.width;ctx.beginPath();ctx.moveTo(this.x,this.y-this.len);ctx.lineTo(this.x,this.y);ctx.stroke();}
-}
-const parts=Array.from({length:isMobile?30:80},()=>new P());
-const streams=Array.from({length:isMobile?10:28},()=>new S(true));
-(function ap(){
-  ctx.clearRect(0,0,pc.width,pc.height);
-  streams.forEach(s=>{s.update();s.draw();});
-  parts.forEach(p=>{p.update();p.draw();});
-  ctx.lineWidth=0.4;
-  for(let i=0;i<parts.length;i++)for(let j=i+1;j<parts.length;j++){
-    const dx=parts[i].x-parts[j].x,dy=parts[i].y-parts[j].y,d=Math.sqrt(dx*dx+dy*dy);
-    if(d<100){ctx.globalAlpha=(1-d/100)*0.12;ctx.strokeStyle='rgba(34,211,238,1)';ctx.beginPath();ctx.moveTo(parts[i].x,parts[i].y);ctx.lineTo(parts[j].x,parts[j].y);ctx.stroke();}
-  }
-  ctx.globalAlpha=1;
-  requestAnimationFrame(ap);
-})();
-window.addEventListener('resize',()=>{resizeGrid();resizePC();});
-const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');}),{threshold:0.1});
+const isMob=window.innerWidth<=768||'ontouchstart'in window;
+if(!isMob){
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+  (function animRing(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing);})();
+}else{cur.style.display='none';ring.style.display='none';}
+
+// Grid canvas
+const gc=document.getElementById('grid-canvas'),gctx=gc.getContext('2d');
+const CELL=80;let goff=0;
+function resizeG(){gc.width=innerWidth;gc.height=innerHeight;}resizeG();
+(function dg(){gctx.clearRect(0,0,gc.width,gc.height);goff=(goff+.15)%CELL;gctx.strokeStyle='rgba(56,189,248,.18)';gctx.lineWidth=.5;for(let x=goff%CELL;x<gc.width+CELL;x+=CELL){gctx.beginPath();gctx.moveTo(x,0);gctx.lineTo(x,gc.height);gctx.stroke();}for(let y=goff%CELL;y<gc.height+CELL;y+=CELL){gctx.beginPath();gctx.moveTo(0,y);gctx.lineTo(gc.width,y);gctx.stroke();}gctx.fillStyle='rgba(34,211,238,.6)';for(let x=goff%CELL;x<gc.width+CELL;x+=CELL)for(let y=goff%CELL;y<gc.height+CELL;y+=CELL)if(Math.random()>.998){gctx.beginPath();gctx.arc(x,y,2,0,Math.PI*2);gctx.fill();}requestAnimationFrame(dg);})();
+
+// Particle canvas
+const pc=document.getElementById('particle-canvas'),pctx=pc.getContext('2d');
+function resizeP(){pc.width=innerWidth;pc.height=innerHeight;}resizeP();
+window.addEventListener('resize',()=>{resizeG();resizeP();});
+class Pt{reset(i){this.x=Math.random()*pc.width;this.y=i?Math.random()*pc.height:Math.random()*pc.height;this.sz=Math.random()*1.4+.3;this.sp=Math.random()*.35+.1;this.a=Math.random()*Math.PI*2;this.w=Math.random()*.018-.009;this.l=i?Math.floor(Math.random()*300):0;this.ml=Math.random()*400+200;this.h=Math.random()>.5?'34,211,238':'56,189,248';}constructor(){this.reset(1);}update(){this.a+=this.w;this.x+=Math.cos(this.a)*this.sp;this.y+=Math.sin(this.a)*this.sp;this.l++;if(this.l>this.ml||this.x<-10||this.x>pc.width+10||this.y<-10||this.y>pc.height+10)this.reset(0);}draw(){const a=Math.sin((this.l/this.ml)*Math.PI)*.65;pctx.beginPath();pctx.arc(this.x,this.y,this.sz,0,Math.PI*2);pctx.fillStyle=`rgba(${this.h},${a})`;pctx.fill();}}
+class St{reset(i){this.x=Math.random()*pc.width;this.y=i?Math.random()*pc.height:-30;this.len=Math.random()*70+20;this.sp=Math.random()*1.2+.4;this.al=Math.random()*.12+.04;this.wid=Math.random()*.7+.2;this.h=Math.random()>.5?'34,211,238':'56,189,248';}constructor(i){this.reset(i);}update(){this.y+=this.sp;if(this.y>pc.height+this.len)this.reset(0);}draw(){const g=pctx.createLinearGradient(this.x,this.y-this.len,this.x,this.y);g.addColorStop(0,`rgba(${this.h},0)`);g.addColorStop(1,`rgba(${this.h},${this.al})`);pctx.strokeStyle=g;pctx.lineWidth=this.wid;pctx.beginPath();pctx.moveTo(this.x,this.y-this.len);pctx.lineTo(this.x,this.y);pctx.stroke();}}
+const pts=Array.from({length:isMob?30:80},()=>new Pt());
+const sts=Array.from({length:isMob?10:28},()=>new St(1));
+(function ap(){pctx.clearRect(0,0,pc.width,pc.height);sts.forEach(s=>{s.update();s.draw();});pts.forEach(p=>{p.update();p.draw();});pctx.lineWidth=.4;for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<100){pctx.globalAlpha=(1-d/100)*.12;pctx.strokeStyle='rgba(34,211,238,1)';pctx.beginPath();pctx.moveTo(pts[i].x,pts[i].y);pctx.lineTo(pts[j].x,pts[j].y);pctx.stroke();}}pctx.globalAlpha=1;requestAnimationFrame(ap);})();
+
+// Reveal observer
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});},{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// Open / close tool overlay
+function openTool(){document.getElementById('tool-overlay').classList.add('open');document.body.style.overflow='hidden';renderAll();}
+function closeTool(){document.getElementById('tool-overlay').classList.remove('open');document.body.style.overflow='';}
+
+// ═══════════════════════════════════════════
+//  TOOL — CRITERIA CONFIG
+// ═══════════════════════════════════════════
+const GO_CATS=[
+  {id:'power',label:'Power Infrastructure & Grid Access',icon:'⚡',catWeight:35,subs:[
+    {text:'Interconnection queue position favorable',w:7},{text:'Interconnection agreement signed',w:6},
+    {text:'Substation / transformer capacity secured',w:6},{text:'Realistic energization timeline (<36 mo)',w:6},
+    {text:'Grid congestion risk manageable',w:4},{text:'Transmission upgrade cost manageable',w:3},{text:'Power equipment supply chain secured',w:3}]},
+  {id:'market',label:'Market Demand & Tenant Strength',icon:'🏢',catWeight:20,subs:[
+    {text:'Anchor tenant LOI or signed lease',w:7},{text:'Hyperscaler or Tier-1 tenant present',w:5},
+    {text:'Take-or-pay power commitment',w:3},{text:'Healthy market absorption rate',w:3},{text:'Limited competing supply pipeline',w:2}]},
+  {id:'finance',label:'Financial Close & Developer Strength',icon:'💰',catWeight:15,subs:[
+    {text:'Construction financing committed',w:5},{text:'Equity committed by sponsors',w:4},
+    {text:'Developer track record strong',w:3},{text:'Budget contingency adequate',w:2},{text:'EPC contract advanced',w:1}]},
+  {id:'permitting',label:'Permitting & Regulatory',icon:'📋',catWeight:10,subs:[
+    {text:'Zoning approved for data center',w:3},{text:'Environmental permitting risk low',w:2},
+    {text:'Community opposition minimal',w:2},{text:'Tax incentives secured',w:2},{text:'Local political support',w:1}]},
+  {id:'site',label:'Site Readiness',icon:'📍',catWeight:8,subs:[
+    {text:'Site fully controlled',w:3},{text:'Geotechnical conditions suitable',w:2},
+    {text:'Environmental studies completed',w:1},{text:'Flood / wildfire risk low',w:1},{text:'Site supports phased expansion',w:1}]},
+  {id:'fiber',label:'Fiber & Connectivity',icon:'🌐',catWeight:7,subs:[
+    {text:'2+ diverse fiber routes confirmed',w:2},{text:'Multiple long-haul carriers present',w:2},
+    {text:'Dark fiber available',w:1},{text:'Near major internet exchange',w:1},{text:'No single backbone dependency',w:1}]},
+  {id:'water',label:'Water & Cooling',icon:'💧',catWeight:5,subs:[
+    {text:'Municipal water supply capacity confirmed',w:2},{text:'Long-term water rights secured',w:1},
+    {text:'Climate cooling viability acceptable',w:1},{text:'Cooling strategy supports AI density',w:1}]},
+  {id:'techrisk',label:'Technical & Construction Risk',icon:'⚠️',catWeight:5,subs:[
+    {text:'Site geology manageable',w:2},{text:'Technology maturity risk low',w:1},
+    {text:'Revenue visibility across phases',w:1},{text:'Developer default risk low',w:1}]},
+];
+const GET_CATS=[
+  {id:'relationship',label:'Relationship & Access',icon:'🤝',catWeight:25,subs:[
+    {text:'Direct decision-maker access (C-level)',w:8},{text:'Prior transactions with this client',w:6},
+    {text:'Seen as strategic partner (not vendor)',w:5},{text:'Relationship is active and recent',w:3},{text:'NDA / MoU in place',w:3}]},
+  {id:'speed',label:'Speed to Deploy',icon:'🚀',catWeight:15,subs:[
+    {text:'Equipment procurement already secured',w:6},{text:'Fastest credible path to COD vs rivals',w:6},{text:'EPC mobilization possible within 60 days',w:3}]},
+  {id:'infra',label:'Infrastructure Advantage',icon:'🔌',catWeight:15,subs:[
+    {text:'Land adjacency or site control',w:5},{text:'Existing interconnection rights usable',w:5},
+    {text:'Gas pipeline / transmission tie-in in place',w:3},{text:'Environmental / air permits already secured',w:2}]},
+  {id:'capital',label:'Capital Strength',icon:'🏦',catWeight:15,subs:[
+    {text:'Balance sheet supports BOO / project finance',w:5},{text:'Can carry construction risk without pre-leasing',w:4},
+    {text:'Phasing flexibility matches DC build-out',w:3},{text:'External capital (if needed) committed',w:3}]},
+  {id:'technical',label:'Technical Reliability Fit',icon:'⚙️',catWeight:15,subs:[
+    {text:'99.999% uptime capability',w:5},{text:'Dispatchable / firm generation',w:4},
+    {text:'24/7 carbon-free energy option',w:3},{text:'Black start capability',w:2},{text:'N+1 redundancy design achievable',w:1}]},
+  {id:'pricing',label:'Pricing Competitiveness',icon:'💲',catWeight:10,subs:[
+    {text:'LCOE competitive vs utility tariff',w:5},{text:'Price + certainty + speed is compelling',w:3},{text:'Pricing structure fits client model',w:2}]},
+  {id:'competition',label:'Competitive Landscape',icon:'🏆',catWeight:3,subs:[
+    {text:'Few capable competitors in this deal',w:2},{text:'Client is not self-generating',w:1}]},
+  {id:'alignment',label:'Strategic Alignment',icon:'🎯',catWeight:2,subs:[
+    {text:'Supports client carbon neutrality goals',w:1},{text:'Long-term partnership value beyond deal',w:1}]},
+];
+
+// ═══════════════════════════════════════════
+//  TOOL — STATE
+// ═══════════════════════════════════════════
+let projects=[];
+let editingId=null,panelTab='go',openCats={};
+let goSub={},getSub={},goInc={},getInc={},goW={},getW={},goSubW={},getSubW={};
+
+function defaultInc(cats){const r={};cats.forEach(c=>{r[c.id]={on:true,subs:{}};c.subs.forEach((_,i)=>r[c.id].subs[i]=true);});return r;}
+function defaultCatW(cats){const r={};cats.forEach(c=>r[c.id]=c.catWeight);return r;}
+function defaultSubW(cats){const r={};cats.forEach(c=>{r[c.id]={};c.subs.forEach((s,i)=>r[c.id][i]=s.w);});return r;}
+function emptySub(cats){const r={};cats.forEach(c=>{r[c.id]={};c.subs.forEach((_,i)=>r[c.id][i]=3);});return r;}
+function catOn(inc,id){return inc[id]?.on!==false;}
+function subOn(inc,id,idx){return inc[id]?.subs[idx]!==false;}
+function getCatW(wmap,cat){return wmap[cat.id]??cat.catWeight;}
+function getSubWv(swmap,catId,idx,cats){const v=swmap?.[catId]?.[idx];if(v!==undefined)return Number(v);return cats.find(c=>c.id===catId)?.subs[idx]?.w??1;}
+
+// ═══════════════════════════════════════════
+//  TOOL — STORAGE (localStorage replaces Flask)
+// ═══════════════════════════════════════════
+function lsLoad(){try{return JSON.parse(localStorage.getItem('kw_dc_projects')||'[]');}catch{return[];}}
+function lsSave(arr){try{localStorage.setItem('kw_dc_projects',JSON.stringify(arr));}catch(e){console.warn('storage',e);}}
+
+// ═══════════════════════════════════════════
+//  TOOL — SCORING
+// ═══════════════════════════════════════════
+function calcAxis(sub,inc,swmap,cats){let s=0,m=0;cats.forEach(cat=>{if(!catOn(inc,cat.id))return;cat.subs.forEach((cr,i)=>{if(!subOn(inc,cat.id,i))return;const w=getSubWv(swmap,cat.id,i,cats);s+=((sub[cat.id]?.[i]??3)/5)*w;m+=w;});});return m?Math.round(s/m*100):0;}
+function calcCombined(g,t){return Math.round((g/100)*(t/100)*100);}
+function verdict(c){if(c>=50)return{label:'BID',color:'#4ade80',dim:'#166534',bg:'#031a0e'};if(c>=25)return{label:'CONDITIONAL',color:'#fbbf24',dim:'#92400e',bg:'#1a0e00'};return{label:'NO-BID',color:'#f87171',dim:'#7f1d1d',bg:'#1a0404'};}
+function scoreColor(p){return p>=70?'#4ade80':p>=45?'#fbbf24':'#f87171';}
+function catPct(cat,sub,inc,swmap,cats){if(!catOn(inc,cat.id))return 0;let s=0,m=0;cat.subs.forEach((cr,i)=>{if(!subOn(inc,cat.id,i))return;const w=getSubWv(swmap,cat.id,i,cats);s+=((sub[cat.id]?.[i]??3)/5)*w;m+=w;});return m?Math.round(s/m*100):0;}
+const SCORE_LBL=['Not Present','Weak','Uncertain','Acceptable','Strong','Excellent'];
+
+// ═══════════════════════════════════════════
+//  TOOL — RENDER
+// ═══════════════════════════════════════════
+function renderAll(){renderSummary();renderTable();renderCounts();}
+function renderCounts(){const b=l=>projects.filter(p=>p.verdict?.label===l).length;document.getElementById('cnt-bid').textContent=b('BID');document.getElementById('cnt-cond').textContent=b('CONDITIONAL');document.getElementById('cnt-nobid').textContent=b('NO-BID');document.getElementById('cnt-un').textContent=projects.filter(p=>!p.verdict).length;}
+function renderSummary(){const sc=projects.filter(p=>p.verdict);const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):null;const ag=avg(sc.map(p=>p.goProb).filter(v=>v!=null)),at=avg(sc.map(p=>p.getProb).filter(v=>v!=null)),ac=avg(sc.map(p=>p.combined).filter(v=>v!=null));document.getElementById('summary').innerHTML=`<div class="sum-card"><div class="sc-num" style="color:#eef3ff">${projects.length}</div><div class="sc-lbl">TOTAL PROJECTS</div><div class="sc-bar"><div class="sc-fill" style="width:100%;background:#263a54"></div></div></div><div class="sum-card"><div class="sc-num" style="color:#38bdf8">${ag!=null?ag+'%':'—'}</div><div class="sc-lbl">AVG GO SCORE</div><div class="sc-bar"><div class="sc-fill" style="width:${ag||0}%;background:#38bdf8"></div></div></div><div class="sum-card"><div class="sc-num" style="color:#a78bfa">${at!=null?at+'%':'—'}</div><div class="sc-lbl">AVG GET SCORE</div><div class="sc-bar"><div class="sc-fill" style="width:${at||0}%;background:#a78bfa"></div></div></div><div class="sum-card"><div class="sc-num" style="color:#fbbf24">${ac!=null?ac+'%':'—'}</div><div class="sc-lbl">AVG WIN PROBABILITY</div><div class="sc-bar"><div class="sc-fill" style="width:${ac||0}%;background:#fbbf24"></div></div></div>`;}
+function renderTable(){const sorted=[...projects].sort((a,b)=>(b.combined??-1)-(a.combined??-1));const el=document.getElementById('tbl-body');if(!sorted.length){el.innerHTML='<div class="t-empty">No projects yet.<br>Click <strong>+ Add Project</strong> to begin.</div>';return;}el.innerHTML=sorted.map((p,i)=>{const v=p.verdict,has=!!v;const gc2=has?'#38bdf8':'var(--text4)',pc2=has?'#a78bfa':'var(--text4)',cc=has?v.color:'var(--text4)';const badge=has?`<span class="badge" style="color:${v.color};background:${v.bg};border:1px solid ${v.dim}">${v.label}</span>`:`<span style="font-family:var(--mono);font-size:10px;color:var(--text3)">UNSCORED</span>`;return`<div class="trow${p.id===editingId?' active':''}" id="row-${p.id}" onclick="openPanel(${p.id})"><div class="row-rank">#${i+1}</div><div><div class="row-name">${p.name}</div><div class="row-meta">${p.location}${p.location&&p.mw?' · ':''}${p.mw?p.mw+' MW':''}</div></div><div class="row-pct"><div class="big" style="color:${gc2}">${has?p.goProb+'%':'—'}</div><div class="tiny">GO</div></div><div class="row-pct"><div class="big" style="color:${pc2}">${has?p.getProb+'%':'—'}</div><div class="tiny">GET</div></div><div class="row-pct"><div class="big" style="color:${cc}">${has?p.combined+'%':'—'}</div><div class="tiny">WIN PROB</div></div><div style="text-align:center">${badge}</div><div class="row-actions" onclick="event.stopPropagation()"><button class="btn-score" onclick="openPanel(${p.id})">Score</button><button class="btn-del" onclick="deleteProject(${p.id})">✕</button></div></div>`;}).join('');}
+
+// ═══════════════════════════════════════════
+//  TOOL — PANEL
+// ═══════════════════════════════════════════
+function openPanel(id){const p=projects.find(x=>x.id===id);if(!p)return;editingId=id;panelTab='go';openCats={};goSub=p.goSub?JSON.parse(JSON.stringify(p.goSub)):emptySub(GO_CATS);getSub=p.getSub?JSON.parse(JSON.stringify(p.getSub)):emptySub(GET_CATS);goInc=p.goInc?JSON.parse(JSON.stringify(p.goInc)):defaultInc(GO_CATS);getInc=p.getInc?JSON.parse(JSON.stringify(p.getInc)):defaultInc(GET_CATS);goW=p.goWeights?{...p.goWeights}:defaultCatW(GO_CATS);getW=p.getWeights?{...p.getWeights}:defaultCatW(GET_CATS);goSubW=p.goSubWeights?JSON.parse(JSON.stringify(p.goSubWeights)):defaultSubW(GO_CATS);getSubW=p.getSubWeights?JSON.parse(JSON.stringify(p.getSubWeights)):defaultSubW(GET_CATS);document.getElementById('panel').style.display='flex';buildPanel();renderTable();}
+function closePanel(){editingId=null;const el=document.getElementById('panel');el.style.display='none';el.innerHTML='';renderTable();}
+
+function buildPanel(){
+  const p=projects.find(x=>x.id===editingId);if(!p)return;
+  const cats=panelTab==='go'?GO_CATS:GET_CATS,sub=panelTab==='go'?goSub:getSub,inc=panelTab==='go'?goInc:getInc,wmap=panelTab==='go'?goW:getW,swmap=panelTab==='go'?goSubW:getSubW;
+  const goP=calcAxis(goSub,goInc,goSubW,GO_CATS),getP=calcAxis(getSub,getInc,getSubW,GET_CATS),cmb=calcCombined(goP,getP),v=verdict(cmb);
+  const catsHtml=cats.map(cat=>{const on=catOn(inc,cat.id),pct=catPct(cat,sub,inc,swmap,cats),col=scoreColor(pct),open=!!openCats[cat.id],curCW=getCatW(wmap,cat),defCW=cat.catWeight,cwMod=curCW!==defCW;
+    return`<div class="cat${on?'':' off'}" id="cat-${cat.id}"><div class="cat-head" onclick="toggleCat('${cat.id}')"><span class="cat-icon">${cat.icon}</span><span class="cat-name">${cat.label}</span><div class="cw-wrap" onclick="event.stopPropagation()" title="Category weight — default: ${defCW}%"><span class="cw-lbl">w</span><input class="cw-inp${cwMod?' cw-modified':''}" type="number" min="0" max="100" value="${curCW}" id="cwi-${cat.id}" onchange="setCatWeight('${cat.id}',this.value)"><span class="cw-pct">%</span>${cwMod?`<button class="cw-reset" onclick="event.stopPropagation();resetCatWeight('${cat.id}',${defCW})" title="Reset to default (${defCW}%)">↺</button>`:`<span class="cw-def">${defCW}</span>`}</div><button class="inc-toggle ${on?'on':'off'}" onclick="event.stopPropagation();toggleCatInc('${cat.id}')">${on?'✓ ON':'✗ OFF'}</button><span class="cat-score" id="cs-${cat.id}" style="color:${col}">${pct}%</span><div class="cat-mbar"><div class="cat-mfill" id="cb-${cat.id}" style="width:${pct}%;background:${col}"></div></div><span class="cat-chev" id="cc-${cat.id}">${open?'▲':'▼'}</span></div><div id="cbw-${cat.id}">${open?buildSubRows(cat,sub,inc,swmap,cats):''}</div></div>`;
+  }).join('');
+  const el=document.getElementById('panel');
+  el.style.flexDirection='column';
+  el.innerHTML=`<div class="panel-header"><div><div class="panel-eyebrow">SCORING PROJECT</div><div class="panel-title">${p.name}</div><div class="panel-meta">${p.location}${p.location&&p.mw?' · ':''}${p.mw?p.mw+' MW':''}</div></div><button class="btn-close" onclick="closePanel()">✕ Close</button></div><div class="v-banner" id="vbanner" style="background:${v.bg}"><div class="v-row"><div><div class="v-eyebrow">DECISION</div><div class="v-decision" id="v-lbl" style="color:${v.color}">${v.label}</div></div><div style="text-align:right"><div class="v-eyebrow">WIN PROBABILITY  (GO × GET)</div><div class="v-prob" id="v-cmb" style="color:${v.color}">${cmb}%</div></div></div><div class="pbar-wrap"><div class="pbar-top"><span class="pbar-lbl">GO SCORE — will this project happen?</span><span class="pbar-pct" id="v-go" style="color:#38bdf8">${goP}%</span></div><div class="pbar-track"><div class="pbar-fill" id="vb-go" style="width:${goP}%;background:#38bdf8"></div></div></div><div class="pbar-wrap" style="margin-bottom:0"><div class="pbar-top"><span class="pbar-lbl">GET SCORE — can we win it?</span><span class="pbar-pct" id="v-get" style="color:#a78bfa">${getP}%</span></div><div class="pbar-track"><div class="pbar-fill" id="vb-get" style="width:${getP}%;background:#a78bfa"></div></div></div></div><div class="tabs"><button class="tab${panelTab==='go'?' active-go':''}" onclick="switchTab('go')">⚡ GO Factors<div class="tab-note">External — will this project fly?</div></button><button class="tab${panelTab==='get'?' active-get':''}" onclick="switchTab('get')">🎯 GET Factors<div class="tab-note">Internal — can we win it?</div></button></div><div class="score-hint"><strong>0–5</strong> score each criterion &nbsp;·&nbsp; <strong>✓/✗</strong> include or exclude &nbsp;·&nbsp; <strong>w</strong> = weight (<span style="color:var(--yellow)">yellow</span> = custom · <span style="color:var(--yellow)">↺</span> resets default)</div><div class="cats" id="cats-wrap">${catsHtml}</div><div class="panel-footer"><button class="btn-save" id="btn-save" style="background:${v.color};color:#000" onclick="savePanel()">Save to Matrix →</button></div>`;
+}
+
+function buildSubRows(cat,sub,inc,swmap,cats){
+  return`<div class="cat-body">${cat.subs.map((s,i)=>{
+    const on=subOn(inc,cat.id,i),score=sub[cat.id]?.[i]??3,curSW=getSubWv(swmap,cat.id,i,cats),defSW=s.w,swMod=curSW!==defSW;
+    const btns=[0,1,2,3,4,5].map(v=>`<button class="sbt${score===v?' a'+v:''}" onclick="setScore('${cat.id}',${i},${v})">${v}</button>`).join('');
+    return`<div class="sub-row${on?'':' off'}" id="sr-${cat.id}-${i}"><button class="sub-chk ${on?'on':'off'}" id="schk-${cat.id}-${i}" onclick="toggleSubInc('${cat.id}',${i})">${on?'✓':'✗'}</button><span class="sub-text">${s.text}</span><div class="sw-wrap" onclick="event.stopPropagation()"><span class="sw-lbl">w</span><input class="sw-inp${swMod?' sw-modified':''}" type="number" min="0" max="99" value="${curSW}" id="swi-${cat.id}-${i}" onchange="setSubWeight('${cat.id}',${i},this.value)">${swMod?`<button class="sw-reset" onclick="event.stopPropagation();resetSubWeight('${cat.id}',${i},${defSW})">↺</button>`:`<span class="sw-def">${defSW}</span>`}</div><div class="sub-btns" id="sb-${cat.id}-${i}">${btns}</div><span class="sub-lbl" id="sl-${cat.id}-${i}" style="color:${scoreColor(score/5*100)}">${SCORE_LBL[score]}</span></div>`;
+  }).join('')}</div>`;
+}
+
+// ═══════════════════════════════════════════
+//  TOOL — SURGICAL UPDATES (no scroll jump)
+// ═══════════════════════════════════════════
+function updateCatHeader(catId){const cats=panelTab==='go'?GO_CATS:GET_CATS,sub=panelTab==='go'?goSub:getSub,inc=panelTab==='go'?goInc:getInc,swmap=panelTab==='go'?goSubW:getSubW,cat=cats.find(c=>c.id===catId);if(!cat)return;const pct=catPct(cat,sub,inc,swmap,cats),col=scoreColor(pct);const cs=document.getElementById(`cs-${catId}`),cb=document.getElementById(`cb-${catId}`);if(cs){cs.textContent=pct+'%';cs.style.color=col;}if(cb){cb.style.width=pct+'%';cb.style.background=col;}}
+function updateBanner(){const goP=calcAxis(goSub,goInc,goSubW,GO_CATS),getP=calcAxis(getSub,getInc,getSubW,GET_CATS),cmb=calcCombined(goP,getP),v=verdict(cmb);const set=(id,txt,col)=>{const e=document.getElementById(id);if(e){if(txt!==null)e.textContent=txt;if(col)e.style.color=col;}};const setW=(id,w)=>{const e=document.getElementById(id);if(e)e.style.width=w;};const ban=document.getElementById('vbanner');if(ban)ban.style.background=v.bg;set('v-lbl',v.label,v.color);set('v-cmb',cmb+'%',v.color);set('v-go',goP+'%',null);set('v-get',getP+'%',null);setW('vb-go',goP+'%');setW('vb-get',getP+'%');const sb=document.getElementById('btn-save');if(sb)sb.style.background=v.color;}
+
+// ═══════════════════════════════════════════
+//  TOOL — INTERACTIONS
+// ═══════════════════════════════════════════
+function toggleCat(id){openCats[id]=!openCats[id];const cats=panelTab==='go'?GO_CATS:GET_CATS,sub=panelTab==='go'?goSub:getSub,inc=panelTab==='go'?goInc:getInc,swmap=panelTab==='go'?goSubW:getSubW,cat=cats.find(c=>c.id===id);if(!cat)return;document.getElementById(`cbw-${id}`).innerHTML=openCats[id]?buildSubRows(cat,sub,inc,swmap,cats):'';document.getElementById(`cc-${id}`).textContent=openCats[id]?'▲':'▼';}
+function toggleCatInc(id){const inc=panelTab==='go'?goInc:getInc;if(!inc[id])inc[id]={on:true,subs:{}};inc[id].on=!inc[id].on;const el=document.getElementById(`cat-${id}`);if(el)el.className='cat'+(inc[id].on?'':' off');updateCatHeader(id);updateBanner();}
+function toggleSubInc(catId,idx){const inc=panelTab==='go'?goInc:getInc;if(!inc[catId])inc[catId]={on:true,subs:{}};inc[catId].subs[idx]=!inc[catId].subs[idx];const on=inc[catId].subs[idx];const row=document.getElementById(`sr-${catId}-${idx}`),chk=document.getElementById(`schk-${catId}-${idx}`);if(row)row.className='sub-row'+(on?'':' off');if(chk){chk.className='sub-chk '+(on?'on':'off');chk.textContent=on?'✓':'✗';}updateCatHeader(catId);updateBanner();}
+function setScore(catId,idx,val){const sub=panelTab==='go'?goSub:getSub;if(!sub[catId])sub[catId]={};sub[catId][idx]=val;const wrap=document.getElementById(`sb-${catId}-${idx}`);if(wrap)wrap.querySelectorAll('.sbt').forEach((btn,i)=>{btn.className='sbt'+(i===val?' a'+i:'');});const lbl=document.getElementById(`sl-${catId}-${idx}`);if(lbl){lbl.textContent=SCORE_LBL[val];lbl.style.color=scoreColor(val/5*100);}updateCatHeader(catId);updateBanner();}
+function setCatWeight(catId,val){const wmap=panelTab==='go'?goW:getW,cats=panelTab==='go'?GO_CATS:GET_CATS,defW=cats.find(c=>c.id===catId)?.catWeight??0,newW=Math.max(0,Math.min(100,Number(val)||0));wmap[catId]=newW;const inp=document.getElementById(`cwi-${catId}`);if(inp)inp.className='cw-inp'+(newW!==defW?' cw-modified':'');rebuildCwSuffix(catId,newW,defW);updateBanner();}
+function resetCatWeight(catId,defW){const wmap=panelTab==='go'?goW:getW;wmap[catId]=defW;const inp=document.getElementById(`cwi-${catId}`);if(inp){inp.value=defW;inp.className='cw-inp';}rebuildCwSuffix(catId,defW,defW);updateBanner();}
+function rebuildCwSuffix(catId,curW,defW){const wrap=document.getElementById(`cwi-${catId}`)?.parentElement;if(!wrap)return;wrap.querySelectorAll('.cw-reset,.cw-def').forEach(el=>el.remove());if(curW!==defW){const btn=document.createElement('button');btn.className='cw-reset';btn.title=`Reset to default (${defW}%)`;btn.textContent='↺';btn.onclick=e=>{e.stopPropagation();resetCatWeight(catId,defW);};wrap.appendChild(btn);}else{const sp=document.createElement('span');sp.className='cw-def';sp.textContent=String(defW);wrap.appendChild(sp);}}
+function setSubWeight(catId,idx,val){const swmap=panelTab==='go'?goSubW:getSubW,cats=panelTab==='go'?GO_CATS:GET_CATS,defW=cats.find(c=>c.id===catId)?.subs[idx]?.w??1,newW=Math.max(0,Math.min(99,Number(val)||0));if(!swmap[catId])swmap[catId]={};swmap[catId][idx]=newW;const inp=document.getElementById(`swi-${catId}-${idx}`);if(inp)inp.className='sw-inp'+(newW!==defW?' sw-modified':'');rebuildSwSuffix(catId,idx,newW,defW);updateCatHeader(catId);updateBanner();}
+function resetSubWeight(catId,idx,defW){const swmap=panelTab==='go'?goSubW:getSubW;if(!swmap[catId])swmap[catId]={};swmap[catId][idx]=defW;const inp=document.getElementById(`swi-${catId}-${idx}`);if(inp){inp.value=defW;inp.className='sw-inp';}rebuildSwSuffix(catId,idx,defW,defW);updateCatHeader(catId);updateBanner();}
+function rebuildSwSuffix(catId,idx,curW,defW){const wrap=document.getElementById(`swi-${catId}-${idx}`)?.parentElement;if(!wrap)return;wrap.querySelectorAll('.sw-reset,.sw-def').forEach(el=>el.remove());if(curW!==defW){const btn=document.createElement('button');btn.className='sw-reset';btn.title=`Reset to default (${defW})`;btn.textContent='↺';btn.onclick=e=>{e.stopPropagation();resetSubWeight(catId,idx,defW);};wrap.appendChild(btn);}else{const sp=document.createElement('span');sp.className='sw-def';sp.textContent=String(defW);wrap.appendChild(sp);}}
+function switchTab(t){if(panelTab===t)return;panelTab=t;openCats={};buildPanel();}
+
+// ═══════════════════════════════════════════
+//  TOOL — SAVE / ADD / DELETE  (localStorage)
+// ═══════════════════════════════════════════
+function savePanel(){
+  const goP=calcAxis(goSub,goInc,goSubW,GO_CATS),getP=calcAxis(getSub,getInc,getSubW,GET_CATS),cmb=calcCombined(goP,getP),v=verdict(cmb);
+  const p=projects.find(x=>x.id===editingId);
+  const upd={...p,goSub,getSub,goInc,getInc,goWeights:goW,getWeights:getW,goSubWeights:goSubW,getSubWeights:getSubW,goProb:goP,getProb:getP,combined:cmb,verdict:{...v}};
+  projects=projects.map(x=>x.id===editingId?upd:x);
+  lsSave(projects);renderAll();updateBanner();
+}
+
+let _nextId=1;
+function openAdd(){document.getElementById('modal').style.display='flex';setTimeout(()=>document.getElementById('inp-name').focus(),60);}
+function closeModal(){document.getElementById('modal').style.display='none';['inp-name','inp-loc','inp-mw'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
+function createProject(){
+  const name=document.getElementById('inp-name').value.trim();
+  if(!name){document.getElementById('inp-name').focus();return;}
+  const loc=document.getElementById('inp-loc').value.trim(),mw=Number(document.getElementById('inp-mw').value)||100;
+  const id=_nextId++;
+  const p={id,name,location:loc,mw,goSub:null,getSub:null,goInc:null,getInc:null,goWeights:null,getWeights:null,goSubWeights:null,getSubWeights:null,goProb:null,getProb:null,combined:null,verdict:null};
+  projects.push(p);lsSave(projects);closeModal();renderAll();openPanel(id);
+}
+function deleteProject(id){if(!confirm('Remove this project from the matrix?'))return;projects=projects.filter(p=>p.id!==id);lsSave(projects);if(editingId===id)closePanel();renderAll();}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+(function init(){
+  projects=lsLoad();
+  _nextId=Math.max(0,...projects.map(p=>p.id||0))+1;
+})();
 </script>
 </body>
 </html>
